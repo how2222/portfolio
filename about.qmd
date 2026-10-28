@@ -1,0 +1,5 @@
+---
+title: "About"
+---
+
+**Contact.** {{< var email >}} · [CV (EN)](cv/CV_Elyas_Chikhaoui_EN.pdf){target="_blank"} · [CV (FR)](cv/CV_Elyas_Chikhaoui_FR.pdf){target="_blank"}

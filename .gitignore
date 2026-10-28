@@ -1,0 +1,11 @@
+/.quarto/
+/_site/
+/_prep/
+/projects/*_files/
+/slides/*_files/
+*.pdf
+!cv/*.pdf
+
+**/*.quarto_ipynb
+/flight.mp4        # raw 4K phone video kept out of the repo; the 720p copy lives in assets/drone/
+/_drafts/          # project sheets kept out of the site (and of the repo)

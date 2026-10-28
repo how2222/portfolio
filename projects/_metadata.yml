@@ -1,0 +1,13 @@
+# Settings shared by every project sheet.
+# Each sheet renders to HTML (site) AND to PDF via Typst (bundled with Quarto, no TeX needed).
+format:
+  html:
+    toc: true
+  typst:
+    papersize: a4
+    margin: { x: 1.8cm, y: 1.6cm }
+    fontsize: 10pt
+    toc: false
+    columns: 1
+    keep-typ: false
+format-links: [typst]

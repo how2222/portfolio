@@ -1,0 +1,158 @@
+---
+# ══════════════════════════════════════════════════════════════════
+#  PROJECT SHEET – TEMPLATE
+#  Copy this file → projects/<slug>.qmd and fill it in.
+#  Everything inside <!-- comments --> is guidance: it is not rendered.
+#  Goal: a 1-page PDF, a 5-minute read, and you must be able to defend every line out loud.
+# ══════════════════════════════════════════════════════════════════
+title: "Short project title"
+subtitle: "One line: what it is, in recruiter language"
+description: "2 lines max, shown on the landing grid. Concrete result + flagship technology."
+date: 2026-01-01              # end date (or last major update)
+categories: [ML, Systems]     # 1–3 tags from: ML, Research, Systems, Hardware, Data, Web
+image: ../assets/<slug>/cover.jpg   # 16:9, real photo > diagram > logo
+# ── project metadata (shown in the box at the top of the page) ──
+status: "Done / Ongoing / Maintained"
+role: "What YOU were: sole developer / first author / project lead…"
+team: "Solo / with X (X's role)"
+duration: "N months, period"
+context: "Personal / Internship at X / Course Y"
+stack: "3–8 keywords, the real ones, the ones found in an internship posting"
+links:
+  repo: ""       # GitHub
+  paper: ""      # PDF / arXiv
+  demo: ""       # video, site, notebook
+---
+
+<!-- ─── Metadata box (leave as is; reads the YAML fields above) ─── -->
+::: {.project-meta}
+<dl>
+<dt>Status</dt><dd>{{< meta status >}}</dd>
+<dt>Role</dt><dd>{{< meta role >}}</dd>
+<dt>Team</dt><dd>{{< meta team >}}</dd>
+<dt>Duration</dt><dd>{{< meta duration >}}</dd>
+<dt>Context</dt><dd>{{< meta context >}}</dd>
+<dt>Stack</dt><dd>{{< meta stack >}}</dd>
+</dl>
+:::
+
+<!-- ══════════════════════════════════════════════════════════════
+     1. PITCH — 2 sentences. Sentence 1: the problem. Sentence 2: the result, with a number.
+     Test: a recruiter who reads only this must understand why it matters.
+     No "I had the opportunity to", no list of technologies here.
+     ══════════════════════════════════════════════════════════════ -->
+::: {.pitch}
+TODO — The problem in one sentence. The result in one sentence, with a number.
+:::
+
+## Context
+
+<!-- 4–6 lines.
+     - Why the project exists (real need, curiosity, assignment).
+     - Starting point: what existed before? (nothing / legacy code / a paper)
+     - Constraints: budget, time, hardware, data.
+     - What you could do at the start vs at the end (one honest sentence). -->
+
+TODO
+
+## The technical problem
+
+<!-- The core of the sheet for a research/engineering profile. 5–10 lines.
+     - State the problem precisely (an equation or a spec if relevant).
+     - What makes it HARD? (combinatorics, noise, latency, cost, hardware…)
+     - Why the obvious solution doesn't work.
+     - What the state of the art / existing tools do, and where they fall short.
+     If you can't explain this paragraph at a whiteboard, the sheet isn't ready. -->
+
+TODO
+
+## Approach & architecture
+
+<!-- 1 diagram is MANDATORY (sketch, Mermaid, Excalidraw…) + 5–10 lines.
+     - Overview: the blocks and what flows between them.
+     - The 2–3 key design decisions, and for each:
+         choice made → alternative(s) rejected → why.
+       (THIS table is what makes the difference in interviews.)
+     - A code or config snippet only if it illustrates a non-trivial idea. -->
+
+![Architecture diagram — TODO](../assets/<slug>/architecture.png){width=85%}
+
+| Decision | Choice made | Alternative rejected | Why |
+|---|---|---|---|
+| TODO | | | |
+| TODO | | | |
+| TODO | | | |
+
+## My contribution
+
+<!-- 3–6 bullets, each starting with an action verb and ending, if possible, with a
+     measurable effect. Clearly separate what YOU did from what came from elsewhere
+     (library, supervisor, teammate). A bullet "what I did not do myself" is a sign
+     of maturity, not weakness. -->
+
+- TODO
+- TODO
+- TODO
+
+## Results
+
+<!-- Numbers, curves, a demo.
+     - Main metric + baseline (a number without a baseline says nothing).
+     - 1 figure or table max in the PDF version; more on the web version.
+     - A video or photo if it's a physical object.
+     - What was actually delivered (paper, running service, flying object). -->
+
+TODO
+
+## Limits & what I would do differently
+
+<!-- The section people forget and good recruiters read first. 3–6 bullets.
+     - What broke, what took 3× longer than planned, and why.
+     - What you now know was a bad decision.
+     - Validity limits of the results (dataset, scale, conditions).
+     - Next step if you had one more month. -->
+
+- TODO
+- TODO
+
+## Links
+
+<!-- Keep only what actually exists. -->
+
+- Code: [{{< meta links.repo >}}]({{< meta links.repo >}})
+- Paper: [{{< meta links.paper >}}]({{< meta links.paper >}})
+- Demo: [{{< meta links.demo >}}]({{< meta links.demo >}})
+
+<!-- ══════════════════════════════════════════════════════════════
+     9. INTERVIEW Q&A — PRIVATE.
+     Only rendered with `quarto render --profile prep` (output in _prep/).
+     5 questions minimum. Format: the question as it would be asked → a 3–5 sentence
+     answer you can say out loud. Include at least:
+       - 1 "why not [obvious alternative]?" question
+       - 1 question digging into a number from the Results section
+       - 1 question about what failed
+       - 1 question on the underlying theory (the math / algorithm / protocol behind it)
+       - 1 "what if we scaled this ×100?" question
+     ══════════════════════════════════════════════════════════════ -->
+::: {.content-visible when-profile="prep"}
+
+## Interview prep (private)
+
+**Q — TODO?**
+A — TODO
+
+**Q — TODO?**
+A — TODO
+
+**Q — TODO?**
+A — TODO
+
+**Q — TODO?**
+A — TODO
+
+**Q — TODO?**
+A — TODO
+
+**Concepts to review before the interview:** TODO (short list, with links to your notes/courses)
+
+:::

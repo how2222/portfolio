@@ -1,0 +1,19 @@
+---
+title: "Projects"
+subtitle: "What I built, and what I learned from it"
+listing:
+  contents: projects
+  type: grid
+  sort: "date desc"
+  fields: [image, title, description, date]
+  grid-columns: 3
+page-layout: full
+---
+
+<!-- 2–3 line pitch: who you are, what you're looking for. Keep it factual. -->
+
+Engineering student at Télécom Paris (applied mathematics, ML), looking for a
+**6-month final-year internship** in ML research / data science starting
+**March 2027**. Every project sheet below follows the same structure: problem,
+approach, my contribution, results, limits. A one-page PDF of each sheet is
+available from the *Other formats* menu.

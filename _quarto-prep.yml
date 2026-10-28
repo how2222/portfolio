@@ -1,0 +1,5 @@
+# Private profile: `quarto render --profile prep`
+# Renders the ::: {.content-visible when-profile="prep"} blocks (interview Q&A)
+# into _prep/ instead of _site/. NEVER publish that folder.
+project:
+  output-dir: _prep

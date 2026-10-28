@@ -1,0 +1,16 @@
+/*-- scss:defaults --*/
+$primary: #1e3c78;           // same blue as the CV
+$font-size-base: 1rem;
+
+/*-- scss:rules --*/
+.project-meta {
+  font-size: 0.9rem;
+  color: #666;
+  border-left: 3px solid $primary;
+  padding-left: .75rem;
+  margin: 1rem 0 1.5rem 0;
+}
+.project-meta dt { font-weight: 600; display: inline; }
+.project-meta dd { display: inline; margin: 0 1rem 0 .25rem; }
+.pitch { font-size: 1.15rem; font-weight: 500; }
+a.lightbox img { cursor: zoom-in; }   // figures with {.lightbox} open in a zoomable overlay

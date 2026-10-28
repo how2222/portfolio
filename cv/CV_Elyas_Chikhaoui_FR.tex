@@ -1,0 +1,144 @@
+%-------------------------
+% CV – Elyas Chikhaoui (FR)
+% Compatible Overleaf (pdflatex)
+%-------------------------
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[left=1.5cm, right=1.5cm, top=1.0cm, bottom=1.0cm]{geometry}
+\usepackage{charter}            % police sobre ; supprimer cette ligne pour revenir à Computer Modern
+\usepackage[scaled=0.92]{helvet}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usepackage{microtype}
+
+\frenchsetup{StandardLists=true}
+
+%── Informations de contact (à modifier ici uniquement) ───────────────────────
+\newcommand{\myname}{Elyas Chikhaoui}
+\newcommand{\myphone}{+33 7 81 86 77 30}
+\newcommand{\mymail}{elyas.chikhaoui@telecom-paris.fr}
+\newcommand{\mygithub}{how2222}
+\newcommand{\mylinkedin}{elyaschikhaoui}
+\newcommand{\mysite}{how2222.github.io}      % TODO : mettre l'URL du site Quarto une fois publié
+
+%── Couleurs ──────────────────────────────────────────────────────────────────
+\definecolor{accent}{RGB}{0,0,0}
+\definecolor{muted}{RGB}{110,110,110}
+
+\hypersetup{hidelinks, pdftitle={CV - \myname}, pdfauthor={\myname}}
+
+%── Sections ──────────────────────────────────────────────────────────────────
+\titleformat{\section}{\large\bfseries\scshape\color{accent}}{}{0em}{}[{\color{accent}\titlerule[0.6pt]}]
+\titlespacing{\section}{0pt}{7pt}{4pt}
+
+%── Entrée de CV : #1 organisation, #2 poste, #3 dates, #4 contenu ────────────
+\newcommand{\cventry}[4]{%
+  \noindent
+  \begin{tabularx}{\textwidth}{@{}X@{\hspace{6pt}}r@{}}
+    \textbf{#1} & \textbf{#3}\\
+    \textit{#2} & \\
+  \end{tabularx}
+  \par\vspace{-1pt}
+  #4
+  \vspace{5pt}
+}
+
+\setlist[itemize]{leftmargin=11pt,noitemsep,topsep=1pt,parsep=0pt,itemsep=1.5pt,label=\textbullet}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\pagestyle{empty}
+
+%─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\scshape \myname}\\[4pt]
+  {\small
+    \faMapMarker*\ Paris
+    \quad\textcolor{muted}{|}\quad \faPhone\ \myphone
+    \quad\textcolor{muted}{|}\quad \faEnvelope\ \href{mailto:\mymail}{\mymail}
+  }\\[3pt]
+  {\small
+    \faGithub\ \href{https://github.com/\mygithub}{GitHub}
+    \quad\textcolor{muted}{|}\quad \faLinkedin\ \href{https://www.linkedin.com/in/\mylinkedin}{linkedin.com/in/\mylinkedin}
+    \quad\textcolor{muted}{|}\quad \faGlobe\ \href{https://\mysite}{\mysite}
+  }\\[4pt]
+  {\small\color{muted}
+    Math\'ematiques appliqu\'ees \& Machine Learning \textbar{} T\'el\'ecom Paris -- Institut Polytechnique de Paris
+  }\\[2pt]
+  {\small\bfseries
+    Stage de fin d'\'etudes (6 mois) -- recherche ML / data science -- disponible \`a partir de mars 2027
+  }
+\end{center}
+
+\section{Exp\'erience professionnelle \& associative}
+
+\cventry{INRIA Paris}%
+  {Stagiaire de recherche -- Machine Learning \& r\'egression symbolique}{janv.~2026 -- juil.~2026}{%
+  \begin{itemize}
+    \item Conception et impl\'ementation de \textbf{DragonSR}, un framework de r\'egression symbolique formulant la d\'ecouverte d'\'equations comme l'optimisation de graphes acycliques dirig\'es (DAG), construit au-dessus de DRAGON (Keisler et al., \textit{JMLR} 2024) : repr\'esentation multi-canaux avec partage de sous-expressions, op\'erateurs de s\'election de features, agr\'egation des canaux par moindres carr\'es (parcimonieuse, nested, polynomiale-rationnelle), recherche par bandits (Mutant-UCB).
+    \item Pipeline robuste au bruit : d\'ebruitage par processus gaussien, sous-\'echantillonnage stochastique, augmentation de variables et s\'election par XGBoost, objectif de corr\'elation et p\'enalit\'e de complexit\'e structurelle.
+    \item Benchmark de 27 \'equations (Nguyen, 9 lois physiques, 9 indices de t\'el\'ed\'etection Sentinel-2 \`a 10+ variables) face \`a \textbf{PySR} (\'etat de l'art), sur 4 niveaux de bruit $\times$ 10 runs : DragonSR retrouve les formules jusqu'\`a 10~\% de bruit l\`a o\`u PySR n'en retrouve aucune (Hubble, gaz parfaits, Kepler, Leavitt, SAVI, EVI2\ldots).
+    \item \textbf{Premier auteur} de l'article \textit{DragonSR: Directed Acyclic Graph Search for Equation Discovery} (avec J.~Keisler et A.~Charantonis), pr\'epublication arXiv \`a para\^itre ; code et r\'esultats publi\'es (GitHub, Zenodo).
+  \end{itemize}
+}
+
+\cventry{Independent Commodity Intelligence Services (ICIS) -- LexisNexis Risk Solutions}%
+  {Stagiaire analyste quantitatif -- march\'es du gaz}{juil.~2025 -- d\'ec.~2025}{%
+  \begin{itemize}
+    \item Extension d'un mod\`ele LP du r\'eseau gazier europ\'een (GAMS) : proposition et impl\'ementation d'une approche par fonctions triangulaires pour mod\'eliser le sendout GNL aux terminaux, rempla\c{c}ant une d\'echarge continue par un profil de d\'echargement des m\'ethaniers distribu\'e dans le temps.
+    \item D\'eveloppement de 15+ graphiques analytiques sur le portail propri\'etaire ICIS (SQL) : spreads de localisation, courbes forward, utilisation des gazoducs ; pipeline de donn\'ees ing\'erant les r\'ealis\'es manquants via l'API ENTSOG pour alimenter des indicateurs de stress d'offre flexible ; carte interactive des flux et prix gaziers europ\'eens quotidiens et pr\'evisionnels, d\'evelopp\'ee de z\'ero (Plotly, Dash).
+    \item Refonte et modularisation du pipeline de traitement des indisponibilit\'es sous un nouveau mod\`ele de donn\'ees : temps d'ex\'ecution par module r\'eduit de $\sim$3~h \`a $\sim$20~min (Python, SQL).
+  \end{itemize}
+}
+
+\cventry{Sopra Steria}%
+  {Stagiaire -- Digital Unit, division Aeroline}{juil.~2024 -- ao\^ut~2024}{%
+  \begin{itemize}
+    \item Contribution \`a \textit{Bhubble}, application web Angular de gestion d'\'equipes et de projets (int\'egration GitLab, sondages, veille technologique).
+    \item Script Python d'automatisation de la migration de tickets (Tuleap $\to$ Spira) ; travail en m\'ethode Agile avec TypeScript, API REST et PostgreSQL.
+  \end{itemize}
+}
+
+\cventry{T\'el\'ecom IA \& Unaite -- associations \'etudiantes d'IA}%
+  {Pr\'esident \& co-fondateur}{juin~2024 -- juil.~2025}{%
+  \begin{itemize}
+    \item Pr\'esident de \textit{T\'el\'ecom IA} : organisation d'\'ev\'enements et d'ateliers techniques avec InstaDeep et Kyutai.
+    \item Co-fondateur d'\textit{Unaite}, alliance nationale des associations \'etudiantes d'IA de 6 grandes \'ecoles, 100+ membres (T\'el\'ecom Paris, \'Ecole Polytechnique, ENPC, CentraleSup\'elec, HEC, ESSEC).
+  \end{itemize}
+}
+
+\section{Formation}
+
+\cventry{T\'el\'ecom Paris \textbar{} Institut Polytechnique de Paris}%
+  {Dipl\^ome d'ing\'enieur -- Math\'ematiques appliqu\'ees}{sept.~2023 -- juin~2027}{%
+  \begin{itemize}
+    \item \textbf{Cours :} calcul stochastique, probabilit\'es en grande dimension, machine learning, informatique, sociologie.
+    \item \textbf{Semestre d'\'echange \`a AGH (Cracovie, Pologne)}, automne 2026 : algorithmes stochastiques, traitement d'images et vision, programmation GPU (CUDA / OpenCL), mod\'elisation et optimisation avec GAMS, soft computing, semi-conducteurs pour le calcul neuromorphique.
+  \end{itemize}
+}
+
+\cventry{Lyc\'ee Henri IV}%
+  {Classes pr\'eparatoires MPSI \& MP}{sept.~2020 -- juil.~2023}{%
+  \begin{itemize}
+    \item Pr\'eparation intensive en math\'ematiques et physique aux concours d'entr\'ee des grandes \'ecoles.
+  \end{itemize}
+}
+
+\section{Comp\'etences \& centres d'int\'er\^et}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{2.1cm} X@{}}
+  Langues     & Fran\c{c}ais (langue maternelle), Anglais (courant, Cambridge Linguaskill : C1), Polonais (conversationnel) \\[2pt]
+  Techniques  & Python (PyTorch, scikit-learn, Pandas, NumPy, Plotly, Dash), SQL / PostgreSQL, GAMS, Git, \LaTeX{} \\[2pt]
+  Int\'er\^ets   & Karat\'e (ceinture noire), Football \\
+\end{tabularx}
+
+\end{document}

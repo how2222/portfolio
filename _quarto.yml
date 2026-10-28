@@ -1,0 +1,52 @@
+# ─────────────────────────────────────────────────────────────
+# Portfolio – Elyas Chikhaoui
+# One folder, three outputs: website (GitHub Pages), one PDF per project, slides.
+#   quarto preview                       → live local preview
+#   quarto render                        → full site + Typst PDF of every project sheet
+#   quarto render --profile prep         → PRIVATE version with interview Q&A (in _prep/)
+#   quarto publish gh-pages              → deploy
+# ─────────────────────────────────────────────────────────────
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+    - "!slides/"          # slides are rendered separately (quarto render slides/xxx.qmd)
+    - "!projects/_template.qmd"
+
+website:
+  title: "Elyas Chikhaoui"
+  description: "Applied Mathematics & Machine Learning — Télécom Paris / IP Paris"
+  site-url: "https://how2222.github.io/portfolio"
+  repo-url: "https://github.com/how2222/portfolio"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Projects
+      - href: about.qmd
+        text: About
+    right:
+      - text: CV
+        menu:
+          - text: CV (EN)
+            href: cv/CV_Elyas_Chikhaoui_EN.pdf
+            target: _blank
+          - text: CV (FR)
+            href: cv/CV_Elyas_Chikhaoui_FR.pdf
+            target: _blank
+      - icon: github
+        href: https://github.com/how2222
+        target: _blank
+      - icon: linkedin
+        href: https://fr.linkedin.com/in/elyaschikhaoui
+        target: _blank
+  page-footer:
+    center: "Elyas Chikhaoui · Final-year internship from March 2027 · elyas.chikhaoui@telecom-paris.fr"
+
+format:
+  html:
+    theme: [cosmo, styles.scss]
+    toc: true
+    toc-depth: 2
+    code-copy: true
+    lang: en
