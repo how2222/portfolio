@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-01">
+<meta name="description" content="F450 quadcopter built from parts (Pixhawk PRO, ArduCopter, Raspberry Pi 4), flown from a laptop program over a 433 MHz telemetry link. January–April 2026. Lifts off indoors; a yaw spin at take-off is the open problem.">
+
+<title>Quadcopter built from scratch on a Pixhawk PRO – Elyas Chikhaoui</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-99d39f9f5afb9a73af3ebf27f0f7da77.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Elyas Chikhaoui</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-cv" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">CV</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-cv">    
+        <li>
+    <a class="dropdown-item" href="../cv/CV_Elyas_Chikhaoui_EN.pdf" target="_blank">
+ <span class="dropdown-text">CV (EN)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../cv/CV_Elyas_Chikhaoui_FR.pdf" target="_blank">
+ <span class="dropdown-text">CV (FR)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/how2222" target="_blank"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://fr.linkedin.com/in/elyaschikhaoui" target="_blank"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#hardware" id="toc-hardware" class="nav-link active" data-scroll-target="#hardware">Hardware</a></li>
+  <li><a href="#system-overview-and-wiring" id="toc-system-overview-and-wiring" class="nav-link" data-scroll-target="#system-overview-and-wiring">System overview and wiring</a></li>
+  <li><a href="#raspberry-pi-setup" id="toc-raspberry-pi-setup" class="nav-link" data-scroll-target="#raspberry-pi-setup">Raspberry Pi setup</a></li>
+  <li><a href="#qgroundcontrol-setup" id="toc-qgroundcontrol-setup" class="nav-link" data-scroll-target="#qgroundcontrol-setup">QGroundControl setup</a></li>
+  <li><a href="#ground-control" id="toc-ground-control" class="nav-link" data-scroll-target="#ground-control">Ground control</a></li>
+  <li><a href="#test-flight" id="toc-test-flight" class="nav-link" data-scroll-target="#test-flight">Test flight</a></li>
+  <li><a href="#links" id="toc-links" class="nav-link" data-scroll-target="#links">Links</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="drone.pdf"><i class="bi bi-file-pdf"></i>Typst</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Quadcopter built from scratch on a Pixhawk PRO</h1></header>
+
+<header id="title-block-header">
+
+
+<p class="date">2026-01-01</p>
+</header>
+
+
+<style>/* this page: title only, no date line under it (the YAML date still orders the project cards) */
+#title-block-header .date, #title-block-header .quarto-title-meta { display: none; }
+.quarto-figure-center > figure > figcaption { text-align: center; }   /* captions centred under the centred figures */</style>
+<p>A quadcopter built from parts and flown from a laptop program over a 433 MHz telemetry link.</p>
+<!-- Diagrams: the system diagram and the icons are generated by assets/drone/diagrams/*.py (re-run after editing); the two remaining draw.io diagrams have their sources in assets/drone/diagrams/*.drawio. Weights marked "typ." are datasheet / listing figures, not measured. -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/build-photo.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The drone on the bench."><img src="../assets/drone/build-photo.jpg" class="img-fluid figure-img" style="width:85.0%" alt="The drone on the bench."></a></p>
+<figcaption>The drone on the bench.</figcaption>
+</figure>
+</div>
+<section id="hardware" class="level2">
+<h2 class="anchored" data-anchor-id="hardware">Hardware</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 41%">
+<col style="width: 7%">
+<col style="width: 11%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Part</th>
+<th>What it is</th>
+<th>Qty</th>
+<th>Price (€)</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><img src="../assets/drone/icons/pixhawk.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/gps.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/pm02.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/switch-buzzer.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/radio.svg" class="img-fluid" width="48"></td>
+<td><strong>Pixhawk PRO kit</strong></td>
+<td>Pixhawk PRO flight controller (STM32F4 @ 168 MHz, 2 MB flash, FMUv3-class, GH1.25 connectors, USB-C, 80 × 48 × 15 mm) + u-blox M8N GPS / compass with mast + PM02 V3.2 power module (2–12S, 5.2 V / 3 A, V/I sensing) + safety switch &amp; buzzer + SiK telemetry radios V5 (433 MHz, 100 mW, ground + air) + cables + vibration mount</td>
+<td>1 kit</td>
+<td>143.99</td>
+<td><a href="https://fr.aliexpress.com/item/1005012560001551.html">AliExpress</a></td>
+</tr>
+<tr class="even">
+<td><img src="../assets/drone/icons/frame.svg" class="img-fluid" width="48"></td>
+<td><strong>F450 frame kit</strong></td>
+<td>HAWK’S WORK F450: 450 mm wheelbase, glass-fibre and nylon, 2 white + 2 red arms, landing gear, pre-soldered bottom plate = power distribution board (MTOW ≈ 1.8 kg)</td>
+<td>1</td>
+<td>37.99</td>
+<td><a href="https://www.amazon.fr/dp/B09YQ4TM88">Amazon</a></td>
+</tr>
+<tr class="odd">
+<td><img src="../assets/drone/icons/motor.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/esc.svg" class="img-fluid" width="48"> <img src="../assets/drone/icons/propeller.svg" class="img-fluid" width="48"></td>
+<td><strong>Motor + ESC + propeller sets</strong></td>
+<td>each set: A2212 13T 1000KV brushless motor + 30 A SimonK ESC (5 V / 2 A BEC) + 2 propellers 1045 (so 4 spare propellers)</td>
+<td>4 sets</td>
+<td>4 × 18.99 = 75.96</td>
+<td><a href="https://www.amazon.fr/dp/B081CW2928">Amazon</a></td>
+</tr>
+<tr class="even">
+<td><img src="../assets/drone/icons/battery.svg" class="img-fluid" width="48"></td>
+<td><strong>Battery</strong></td>
+<td>AMZZN LiPo 3S 11.1 V, 3000 mAh, 35C, XT60, with its USB charger</td>
+<td>1</td>
+<td>34.99</td>
+<td><a href="https://www.amazon.fr/dp/B0CY898G24">Amazon</a></td>
+</tr>
+<tr class="odd">
+<td><img src="../assets/drone/icons/raspberry-pi.svg" class="img-fluid" width="48"></td>
+<td><strong>Raspberry Pi 4 Model B</strong></td>
+<td>2 GB, Raspberry Pi OS 32-bit on a 32 GB micro-SD card (25 €)</td>
+<td>1</td>
+<td>≈ 65 + 25</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><img src="../assets/drone/icons/misc.svg" class="img-fluid" width="48"></td>
+<td><strong>Connectors and safety</strong></td>
+<td>brass bullet connectors, crimped by hand — no soldering on this build (11.99) · 3 pairs of XT60 connectors (9.99) · 2 LiPo-safe charging bags (10.00)</td>
+<td></td>
+<td>31.98</td>
+<td><a href="https://www.amazon.fr/dp/B0B7FVQBW7">bullets</a> · <a href="https://www.amazon.fr/dp/B0CF88BTYB">XT60</a> · <a href="https://www.amazon.fr/dp/B0F4XB3N71">bags</a></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td><strong>Total</strong></td>
+<td></td>
+<td></td>
+<td><strong>≈ 415</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- No RC transmitter or receiver: the drone is flown from the Mac over the telemetry link (see Ground control). -->
+<div class="callout callout-style-simple callout-note no-icon callout-titled" title="Weight budget — typical values, to be replaced by the scale">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Weight budget — typical values, to be replaced by the scale
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Part</th>
+<th>Qty</th>
+<th>Unit (g)</th>
+<th>Total (g)</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>F450 frame, incl.&nbsp;PDB plate</td>
+<td>1</td>
+<td>282</td>
+<td>282</td>
+<td>manufacturer spec</td>
+</tr>
+<tr class="even">
+<td>A2212 1000KV motor</td>
+<td>4</td>
+<td>≈ 50</td>
+<td>≈ 200</td>
+<td>typ. (listings: 47–56 g)</td>
+</tr>
+<tr class="odd">
+<td>30 A ESC</td>
+<td>4</td>
+<td>≈ 25</td>
+<td>≈ 100</td>
+<td>typ.</td>
+</tr>
+<tr class="even">
+<td>1045 propeller</td>
+<td>4</td>
+<td>≈ 13</td>
+<td>≈ 52</td>
+<td>typ.</td>
+</tr>
+<tr class="odd">
+<td>Pixhawk PRO</td>
+<td>1</td>
+<td>≈ 38</td>
+<td>≈ 38</td>
+<td>Pixhawk 2.4.8 figure</td>
+</tr>
+<tr class="even">
+<td>M8N GPS + mast</td>
+<td>1</td>
+<td>≈ 50</td>
+<td>≈ 50</td>
+<td>typ.</td>
+</tr>
+<tr class="odd">
+<td>PM02 V3.2</td>
+<td>1</td>
+<td>20</td>
+<td>20</td>
+<td>vendor spec</td>
+</tr>
+<tr class="even">
+<td>Safety switch + buzzer</td>
+<td>1</td>
+<td>≈ 10</td>
+<td>≈ 10</td>
+<td>typ.</td>
+</tr>
+<tr class="odd">
+<td>Telemetry radio (air) + antenna</td>
+<td>1</td>
+<td>≈ 20</td>
+<td>≈ 20</td>
+<td>typ.</td>
+</tr>
+<tr class="even">
+<td>Raspberry Pi 4 B</td>
+<td>1</td>
+<td>46</td>
+<td>46</td>
+<td>Raspberry Pi spec</td>
+</tr>
+<tr class="odd">
+<td>LiPo 3S 3000 mAh 35C</td>
+<td>1</td>
+<td>≈ 240</td>
+<td>≈ 240</td>
+<td>typ. (listings: 220–260 g)</td>
+</tr>
+<tr class="even">
+<td>Wiring, straps, misc.</td>
+<td></td>
+<td>≈ 40</td>
+<td>≈ 40</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td><strong>All-up weight</strong></td>
+<td></td>
+<td></td>
+<td><strong>≈ 1.1 kg</strong></td>
+<td>estimate</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="system-overview-and-wiring" class="level2">
+<h2 class="anchored" data-anchor-id="system-overview-and-wiring">System overview and wiring</h2>
+<!-- One diagram for the whole system: power chain (red), wiring to the real ports of the Pixhawk PRO and of the Pi's GPIO header (blue), wireless links (dashed) and the software on each machine (purple). On the site it is interactive: hover for details, click a part to highlight its connections, toggle layers, full screen. Source: assets/drone/diagrams/system_diagram.py. -->
+<div class="sysdiag" id="sysdiag">
+<div class="sysdiag-bar">
+  <span class="sysdiag-lbl">Layers</span>
+  <label><input type="checkbox" data-layer="power" checked=""> Power</label>
+  <label><input type="checkbox" data-layer="signal" checked=""> Wiring</label>
+  <label><input type="checkbox" data-layer="radio" checked=""> Wireless</label>
+  <label><input type="checkbox" data-layer="software" checked=""> Software</label>
+  <span class="sysdiag-hint">Hover a wire or a part for details · click a part to highlight its connections</span>
+  <button type="button" class="sysdiag-fs" data-act="fs">Full screen</button>
+</div>
+<div class="sysdiag-stage">
+<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1300 920" id="sysdiag-svg" font-family="Helvetica, Arial, sans-serif">
+<rect id="sysdiag-svg" fill="#ffffff"></rect>
+<rect x="30" y="40" width="310" height="600" rx="14" fill="#f3f6fb" stroke="#b7c4dd" stroke-width="1"></rect>
+<text x="45" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" text-anchor="start" font-weight="bold" font-style="normal" fill="#1e3c78">Ground station — MacBook</text>
+<rect x="390" y="40" width="890" height="820" rx="14" fill="#f3f6fb" stroke="#b7c4dd" stroke-width="1"></rect>
+<text x="405" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" text-anchor="start" font-weight="bold" font-style="normal" fill="#1e3c78">Drone — F450 quadcopter</text>
+<g class="layer layer-hw">
+<g id="mac" class="comp" data-info="MacBook: QGroundControl for setup and monitoring (over USB-C or the radio), and mavcontrol.py, the Python + pygame program that flies the drone">
+<rect x="70" y="88" width="230" height="152" rx="8" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.5"></rect><rect x="78" y="96" width="214" height="130" rx="4" fill="#111111" stroke="#111111" stroke-width="1"></rect><rect x="84" y="102" width="202" height="118" rx="2" fill="#f8f9fb" stroke="#f8f9fb" stroke-width="1"></rect><path d="M 58 240 L 312 240 L 322 258 L 48 258 Z" fill="#c9ced6" stroke="#9aa4b5" stroke-width="1.4"></path><rect x="100" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="114" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="128" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="142" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="156" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="170" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="184" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="198" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="212" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="226" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="240" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="254" y="244" width="11" height="4" rx="1" fill="#e9ecf1"></rect><rect x="160" y="250" width="50" height="5" rx="2" fill="#e9ecf1"></rect><text x="185" y="274" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">MacBook</text>
+</g>
+<g id="gradio" class="comp" data-info="SiK telemetry radio V5, ground module (from the Pixhawk kit): 433 MHz, 100 mW, USB on the Mac — mavcontrol.py opens it as /dev/tty.usbserial-0001 at 57 600 baud">
+<rect x="110" y="350" width="130" height="48" rx="6" fill="#1b1b1b" stroke="#000000" stroke-width="1.4"></rect><rect x="96" y="366" width="16" height="16" rx="2" fill="#8a8f98"></rect><rect x="221" y="344" width="8" height="8" fill="#8a8f98"></rect><line x1="225" y1="344" x2="225" y2="308" stroke="#1b1b1b" stroke-width="4"></line><circle cx="225" cy="306" r="3.5" fill="#1b1b1b" stroke="none" stroke-width="1"></circle><circle cx="122" cy="358" r="2.2" fill="#e53935" stroke="none" stroke-width="1"></circle><circle cx="130" cy="358" r="2.2" fill="#43a047" stroke="none" stroke-width="1"></circle><text x="178" y="370.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">SiK telemetry radio V5</text>
+<text x="178" y="382.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#ffffff">ground · 433 MHz · 100 mW</text>
+</g>
+<text x="70" y="432.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">No RC transmitter: the drone is flown</text>
+<text x="70" y="445.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">from mavcontrol.py on the Mac.</text>
+<text x="182" y="300" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" font-weight="normal" font-style="normal" fill="#666666">USB</text>
+<g id="m1" class="comp" data-info="Motor 1 of the Quad X layout (front-right, CCW): A2212 13T 1000KV brushless outrunner with a 1045 propeller">
+<circle cx="735" cy="95" r="26" fill="#d4a83a" stroke="#8c6d1a" stroke-width="1.5"></circle><circle cx="754.0" cy="95.0" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="748.4403771141768" cy="108.42967844100195" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="735.015130207504" cy="113.99999397570485" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="721.58102874842" cy="108.45106726432022" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="716.0000240971767" cy="95.03026040541324" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="721.5382511153468" cy="81.59174444729894" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="734.9546094158667" cy="76.00005421863335" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="748.3975313511601" cy="81.52757803159788" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="735" cy="95" r="9" fill="#d9dde3" stroke="#777777" stroke-width="1"></circle><circle cx="735" cy="95" r="2.5" fill="#555555" stroke="none" stroke-width="1"></circle><text x="735" y="134" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">M1</text>
+<text x="735" y="144" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">front-right · CCW</text>
+</g>
+<g id="esc1" class="comp" data-info="ESC of motor 1: 30 A brushless ESC (SimonK-type) with a 5 V / 2 A BEC, in heat-shrink; its power leads end in crimped brass bullet connectors mated to XT60 connectors on the plate (nothing soldered)">
+<rect x="705" y="152" width="60" height="32" rx="6" fill="#2b2b2b" stroke="#111111" stroke-width="1.4"></rect><text x="735" y="166" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">ESC 1</text><text x="735" y="178" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="middle" font-weight="normal" font-style="normal" fill="#cfcfcf">30A</text>
+</g>
+<g id="m2" class="comp" data-info="Motor 2 of the Quad X layout (rear-left, CCW): A2212 13T 1000KV brushless outrunner with a 1045 propeller">
+<circle cx="825" cy="95" r="26" fill="#d4a83a" stroke="#8c6d1a" stroke-width="1.5"></circle><circle cx="844.0" cy="95.0" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="838.4403771141768" cy="108.42967844100195" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="825.015130207504" cy="113.99999397570485" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="811.58102874842" cy="108.45106726432022" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="806.0000240971767" cy="95.03026040541324" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="811.5382511153468" cy="81.59174444729894" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="824.9546094158667" cy="76.00005421863335" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="838.3975313511601" cy="81.52757803159788" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="825" cy="95" r="9" fill="#d9dde3" stroke="#777777" stroke-width="1"></circle><circle cx="825" cy="95" r="2.5" fill="#555555" stroke="none" stroke-width="1"></circle><text x="825" y="134" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">M2</text>
+<text x="825" y="144" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">rear-left · CCW</text>
+</g>
+<g id="esc2" class="comp" data-info="ESC of motor 2: 30 A brushless ESC (SimonK-type) with a 5 V / 2 A BEC, in heat-shrink; its power leads end in crimped brass bullet connectors mated to XT60 connectors on the plate (nothing soldered)">
+<rect x="795" y="152" width="60" height="32" rx="6" fill="#2b2b2b" stroke="#111111" stroke-width="1.4"></rect><text x="825" y="166" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">ESC 2</text><text x="825" y="178" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="middle" font-weight="normal" font-style="normal" fill="#cfcfcf">30A</text>
+</g>
+<g id="m3" class="comp" data-info="Motor 3 of the Quad X layout (front-left, CW): A2212 13T 1000KV brushless outrunner with a 1045 propeller">
+<circle cx="915" cy="95" r="26" fill="#d4a83a" stroke="#8c6d1a" stroke-width="1.5"></circle><circle cx="934.0" cy="95.0" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="928.4403771141768" cy="108.42967844100195" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="915.015130207504" cy="113.99999397570485" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="901.58102874842" cy="108.45106726432022" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="896.0000240971767" cy="95.03026040541324" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="901.5382511153468" cy="81.59174444729894" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="914.9546094158667" cy="76.00005421863335" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="928.3975313511601" cy="81.52757803159788" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="915" cy="95" r="9" fill="#d9dde3" stroke="#777777" stroke-width="1"></circle><circle cx="915" cy="95" r="2.5" fill="#555555" stroke="none" stroke-width="1"></circle><text x="915" y="134" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">M3</text>
+<text x="915" y="144" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">front-left · CW</text>
+</g>
+<g id="esc3" class="comp" data-info="ESC of motor 3: 30 A brushless ESC (SimonK-type) with a 5 V / 2 A BEC, in heat-shrink; its power leads end in crimped brass bullet connectors mated to XT60 connectors on the plate (nothing soldered)">
+<rect x="885" y="152" width="60" height="32" rx="6" fill="#2b2b2b" stroke="#111111" stroke-width="1.4"></rect><text x="915" y="166" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">ESC 3</text><text x="915" y="178" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="middle" font-weight="normal" font-style="normal" fill="#cfcfcf">30A</text>
+</g>
+<g id="m4" class="comp" data-info="Motor 4 of the Quad X layout (rear-right, CW): A2212 13T 1000KV brushless outrunner with a 1045 propeller">
+<circle cx="1005" cy="95" r="26" fill="#d4a83a" stroke="#8c6d1a" stroke-width="1.5"></circle><circle cx="1024.0" cy="95.0" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="1018.4403771141768" cy="108.42967844100195" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="1005.015130207504" cy="113.99999397570485" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="991.58102874842" cy="108.45106726432022" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="986.0000240971767" cy="95.03026040541324" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="991.5382511153468" cy="81.59174444729894" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="1004.9546094158667" cy="76.00005421863335" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="1018.3975313511601" cy="81.52757803159788" r="2.2" fill="#8c6d1a" stroke="none" stroke-width="1"></circle><circle cx="1005" cy="95" r="9" fill="#d9dde3" stroke="#777777" stroke-width="1"></circle><circle cx="1005" cy="95" r="2.5" fill="#555555" stroke="none" stroke-width="1"></circle><text x="1005" y="134" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">M4</text>
+<text x="1005" y="144" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">rear-right · CW</text>
+</g>
+<g id="esc4" class="comp" data-info="ESC of motor 4: 30 A brushless ESC (SimonK-type) with a 5 V / 2 A BEC, in heat-shrink; its power leads end in crimped brass bullet connectors mated to XT60 connectors on the plate (nothing soldered)">
+<rect x="975" y="152" width="60" height="32" rx="6" fill="#2b2b2b" stroke="#111111" stroke-width="1.4"></rect><text x="1005" y="166" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">ESC 4</text><text x="1005" y="178" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="middle" font-weight="normal" font-style="normal" fill="#cfcfcf">30A</text>
+</g>
+<text x="1050" y="90.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">A2212 1000KV</text>
+<text x="1050" y="102.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">+ 1045 props</text>
+<text x="1050" y="160" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">30 A ESC (5 V BEC)</text>
+<text x="1050" y="171" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">SERVOn_FUNCTION must match the motor</text>
+<text x="1050" y="182" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">each output really drives: the numbers</text>
+<text x="1050" y="193" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">printed on this board's MAIN OUT rail</text>
+<text x="1050" y="204" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">do not match the firmware outputs</text>
+<g id="plate" class="comp" data-info="F450 bottom plate: the frame's power distribution board (black PCB with copper pads), pre-soldered; the ESCs plug into it through XT60 and crimped brass bullet connectors (nothing soldered on this build)">
+<rect x="660" y="210" width="420" height="26" rx="5" fill="#1b1b1b" stroke="#000000" stroke-width="1.4"></rect><rect x="675" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="727" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="779" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="831" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="883" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="935" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="987" y="216" width="14" height="6" fill="#d4a83a"></rect><rect x="1039" y="216" width="14" height="6" fill="#d4a83a"></rect><text x="870" y="231" font-family="Helvetica, Arial, sans-serif" font-size="10.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">F450 bottom plate = power distribution board (+ / −)</text>
+</g>
+<g id="pixhawk" class="comp" data-info="Pixhawk PRO flight controller: STM32F4 @ 168 MHz, 2 MB flash (FMUv3-class), running ArduCopter 4.6.3">
+<rect x="705" y="262" width="260" height="428" rx="26" fill="#1b1b1b" stroke="#000000" stroke-width="2"></rect><rect x="717" y="296" width="236" height="382" rx="14" fill="#262626" stroke="#262626" stroke-width="1"></rect><rect x="717" y="264" width="236" height="26" rx="3" fill="#0f0f0f"></rect><circle cx="724" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="724" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="724" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="731" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="731" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="731" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="738" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="738" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="738" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="745" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="745" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="745" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="752" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="752" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="752" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="759" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="759" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="759" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="766" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="766" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="766" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="773" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="773" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="773" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="780" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="780" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="780" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="787" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="787" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="787" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="794" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="794" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="794" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="801" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="801" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="801" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="808" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="808" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="808" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="815" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="815" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="815" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="822" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="822" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="822" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="829" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="829" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="829" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="836" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="836" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="836" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="843" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="843" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="843" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="850" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="850" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="850" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="857" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="857" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="857" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="864" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="864" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="864" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="871" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="871" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="871" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="878" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="878" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="878" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="885" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="885" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="885" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="892" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="892" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="892" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="899" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="899" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="899" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="906" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="906" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="906" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="913" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="913" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="913" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="920" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="920" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="920" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="927" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="927" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="927" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="934" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="934" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="934" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="941" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="941" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="941" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="948" cy="269" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="948" cy="276" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="948" cy="283" r="1.3" fill="#cfcfcf" stroke="none" stroke-width="1"></circle><circle cx="722" cy="302" r="4" fill="#8a8f98" stroke="#555" stroke-width="1"></circle><circle cx="948" cy="302" r="4" fill="#8a8f98" stroke="#555" stroke-width="1"></circle><circle cx="722" cy="672" r="4" fill="#8a8f98" stroke="#555" stroke-width="1"></circle><circle cx="948" cy="672" r="4" fill="#8a8f98" stroke="#555" stroke-width="1"></circle><text x="760" y="294" font-family="Helvetica, Arial, sans-serif" font-size="7.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">AUX OUT</text><text x="845" y="294" font-family="Helvetica, Arial, sans-serif" font-size="7.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">MAIN OUT 1–8</text><text x="925" y="294" font-family="Helvetica, Arial, sans-serif" font-size="7.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">SBUS · RCIN</text><text x="835" y="324" font-family="Helvetica, Arial, sans-serif" font-size="22" text-anchor="middle" font-weight="bold" font-style="italic" fill="#ffffff">pixhawk</text><text x="835" y="339" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">PRO</text><circle cx="735" cy="349" r="2.5" fill="#8fd18f" stroke="none" stroke-width="1"></circle><circle cx="935" cy="349" r="2.5" fill="#8fd18f" stroke="none" stroke-width="1"></circle><text x="745" y="352" font-family="Helvetica, Arial, sans-serif" font-size="7" text-anchor="start" font-weight="normal" font-style="normal" fill="#bbbbbb">FMU</text><text x="929" y="352" font-family="Helvetica, Arial, sans-serif" font-size="7" text-anchor="end" font-weight="normal" font-style="normal" fill="#bbbbbb">IO</text><circle cx="835" cy="556" r="9" fill="#555555" stroke="#8a8a8a" stroke-width="1"></circle><path d="M 823 604 L 847 604 L 835 648 Z" fill="#ffffff"></path><rect x="699" y="524" width="12" height="18" rx="2" fill="#cfcfcf" stroke="#777" stroke-width="1"></rect><text x="694" y="537" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="end" font-weight="bold" font-style="normal" fill="#1e3c78">USB-C</text>
+</g>
+<g id="p-spkt" class="comp" data-info="SPKT/DSM: Spektrum satellite receiver input (unused)">
+<rect x="727" y="365" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="732" y="370" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="362" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">SPKT/DSM</text>
+</g>
+<g id="p-buzzer" class="comp" data-info="BUZZER port: the buzzer from the kit">
+<rect x="907" y="365" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="912" y="370" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="362" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">BUZZER</text>
+</g>
+<g id="p-telem2" class="comp" data-info="TELEM 2 = SERIAL2: MAVLink 2 to the Raspberry Pi at 57 600 baud (SERIAL2_PROTOCOL = 2, SERIAL2_BAUD = 57); its 5 V pin also powers the Pi">
+<rect x="727" y="411" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="732" y="416" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="408" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">TELEM 2</text>
+</g>
+<g id="p-switch" class="comp" data-info="SWITCH port: safety switch (must be pressed before arming)">
+<rect x="817" y="411" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="822" y="416" width="26" height="4" fill="#4a4a4a"></rect><text x="835" y="408" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">SWITCH</text>
+</g>
+<g id="p-s45" class="comp" data-info="SERIAL 4/5 (unused)">
+<rect x="907" y="411" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="912" y="416" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="408" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">SERIAL 4/5</text>
+</g>
+<g id="p-telem1" class="comp" data-info="TELEM 1 = SERIAL1: the SiK telemetry radio (air module)">
+<rect x="727" y="457" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="732" y="462" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="454" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">TELEM 1</text>
+</g>
+<g id="p-gps" class="comp" data-info="GPS port: u-blox M8N over UART (6-pin cable)">
+<rect x="907" y="457" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="912" y="462" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="454" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">GPS</text>
+</g>
+<g id="p-usb" class="comp" data-info="USB (GH connector, unused; the side USB-C is used for setup)">
+<rect x="727" y="503" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="732" y="508" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="500" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">USB</text>
+</g>
+<g id="p-adc33" class="comp" data-info="ADC 3.3 V input (unused)">
+<rect x="817" y="503" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="822" y="508" width="26" height="4" fill="#4a4a4a"></rect><text x="835" y="500" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">ADC 3.3V</text>
+</g>
+<g id="p-can" class="comp" data-info="CAN bus (unused)">
+<rect x="907" y="503" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="912" y="508" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="500" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">CAN</text>
+</g>
+<g id="p-spi" class="comp" data-info="SPI (unused)">
+<rect x="727" y="591" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="732" y="596" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="588" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">SPI</text>
+</g>
+<g id="p-i2c" class="comp" data-info="I2C port: the M8N module's compass (4-pin cable)">
+<rect x="907" y="591" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="912" y="596" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="588" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">I2C</text>
+</g>
+<g id="p-power" class="comp" data-info="POWER port: 6-pin lead from the PM02 — 5.2 V supply plus battery voltage and current sensing">
+<rect x="727" y="635" width="36" height="14" rx="2" fill="#f2f2f2" stroke="#c9c9c9" stroke-width="1"></rect><rect x="732" y="640" width="26" height="4" fill="#4a4a4a"></rect><text x="745" y="632" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">POWER</text>
+</g>
+<g id="p-adc66" class="comp" data-info="ADC 6.6 V input (unused)">
+<rect x="907" y="635" width="36" height="14" rx="2" fill="#8a8a8a" stroke="#555" stroke-width="1"></rect><rect x="912" y="640" width="26" height="4" fill="#4a4a4a"></rect><text x="925" y="632" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#8a8a8a">ADC 6.6V</text>
+</g>
+<g id="pi" class="comp" data-info="Raspberry Pi 4 Model B, 2 GB: companion computer running MAVProxy / pymavlink, linked to the Pixhawk over UART (TELEM 2) and powered from the same connector's 5 V pin">
+<rect x="400" y="330" width="255" height="168" rx="7" fill="#2f8a46" stroke="#246d37" stroke-width="2"></rect><circle cx="410.5" cy="340.5" r="5" fill="#f4d03f" stroke="#c9a40c" stroke-width="1"></circle><circle cx="410.5" cy="340.5" r="2.4" fill="#f8f9fb" stroke="none" stroke-width="1"></circle><circle cx="584.5" cy="340.5" r="5" fill="#f4d03f" stroke="#c9a40c" stroke-width="1"></circle><circle cx="584.5" cy="340.5" r="2.4" fill="#f8f9fb" stroke="none" stroke-width="1"></circle><circle cx="410.5" cy="487.5" r="5" fill="#f4d03f" stroke="#c9a40c" stroke-width="1"></circle><circle cx="410.5" cy="487.5" r="2.4" fill="#f8f9fb" stroke="none" stroke-width="1"></circle><circle cx="584.5" cy="487.5" r="5" fill="#f4d03f" stroke="#c9a40c" stroke-width="1"></circle><circle cx="584.5" cy="487.5" r="2.4" fill="#f8f9fb" stroke="none" stroke-width="1"></circle><rect x="417" y="336" width="158" height="17" rx="2" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><circle cx="421.3" cy="340.5" r="2.3" fill="#c0392b" stroke="none" stroke-width="1"></circle><circle cx="421.3" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="428.92" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="428.92" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="436.54" cy="340.5" r="2.3" fill="#111111" stroke="none" stroke-width="1"></circle><circle cx="436.54" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="444.16" cy="340.5" r="2.3" fill="#1e3c78" stroke="none" stroke-width="1"></circle><circle cx="444.16" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="451.78000000000003" cy="340.5" r="2.3" fill="#2e7d32" stroke="none" stroke-width="1"></circle><circle cx="451.78000000000003" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="459.40000000000003" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="459.40000000000003" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="467.02" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="467.02" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="474.64" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="474.64" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="482.26" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="482.26" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="489.88" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="489.88" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="497.5" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="497.5" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="505.12" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="505.12" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="512.74" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="512.74" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="520.36" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="520.36" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="527.98" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="527.98" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="535.6" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="535.6" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="543.22" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="543.22" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="550.84" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="550.84" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="558.46" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="558.46" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="566.08" cy="340.5" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><circle cx="566.08" cy="348.1" r="2.3" fill="#9aa4b5" stroke="none" stroke-width="1"></circle><rect x="587" y="350" width="12" height="10" rx="1" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><rect x="595" y="336" width="66" height="48" rx="3" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="603" y="346" width="50" height="28" rx="2" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="595" y="396" width="66" height="42" rx="3" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="603" y="402" width="50" height="12" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="603" y="420" width="50" height="12" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="595" y="456" width="66" height="42" rx="3" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="603" y="462" width="50" height="12" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="603" y="480" width="50" height="12" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="469" y="387" width="40" height="40" rx="4" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="476" y="394" width="26" height="26" rx="2" fill="#c3c9d2" stroke="#b0b7c2" stroke-width="1"></rect><rect x="514" y="387" width="30" height="30" rx="2" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><text x="529" y="405" font-family="Helvetica, Arial, sans-serif" font-size="7" text-anchor="middle" font-weight="normal" font-style="normal" fill="#9aa4b5">RAM</text><rect x="565" y="411" width="18" height="18" rx="2" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><rect x="550" y="390" width="7" height="70" rx="1" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><rect x="552" y="396" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="400" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="404" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="408" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="412" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="416" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="420" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="424" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="428" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="432" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="436" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="440" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="444" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="448" width="3" height="2" fill="#c9a40c"></rect><rect x="552" y="452" width="3" height="2" fill="#c9a40c"></rect><rect x="403" y="375" width="7" height="70" rx="1" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><rect x="405" y="381" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="385" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="389" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="393" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="397" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="401" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="405" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="409" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="413" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="417" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="421" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="425" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="429" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="433" width="3" height="2" fill="#c9a40c"></rect><rect x="405" y="437" width="3" height="2" fill="#c9a40c"></rect><rect x="422.5" y="489" width="27" height="12" rx="3" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="428.5" y="492" width="15" height="6" rx="3" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="460" y="489" width="24" height="12" rx="2" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="465" y="492" width="14" height="6" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="494.5" y="489" width="24" height="12" rx="2" fill="#d9dde3" stroke="#9aa4b5" stroke-width="1.2"></rect><rect x="499.5" y="492" width="14" height="6" rx="1" fill="#9aa4b5" stroke="#9aa4b5" stroke-width="1"></rect><rect x="560.5" y="483" width="16" height="20" rx="3" fill="#1b1b1b" stroke="#000000" stroke-width="1"></rect><circle cx="568.5" cy="503" r="5" fill="#333333" stroke="#000" stroke-width="1"></circle><circle cx="438" cy="420" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="446" cy="420" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="434.5" cy="425.5" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="442" cy="425.5" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="449.5" cy="425.5" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="438" cy="431" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="446" cy="431" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><circle cx="442" cy="435.5" r="3.6" fill="#ffffff" stroke="none" stroke-width="1"></circle><path d="M 441 416 C 436 414 431 414 429 410 C 434 409 439 411 441 416 Z" fill="#ffffff"></path><path d="M 443 416 C 448 414 453 414 455 410 C 450 409 445 411 443 416 Z" fill="#ffffff"></path><text x="421" y="362" font-family="Helvetica, Arial, sans-serif" font-size="7.5" text-anchor="start" font-weight="normal" font-style="normal" fill="#ffffff">pin 2 · 5 V    6 · GND    8 · TXD    10 · RXD</text><text x="421" y="456" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" font-weight="bold" font-style="normal" fill="#ffffff">Raspberry Pi 4 Model B · 2 GB</text>
+</g>
+<text x="400" y="512" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="start" font-weight="normal" font-style="italic" fill="#666666">Powered from the Pixhawk's TELEM 2 5 V pin (via the PM02)</text>
+<g id="aradio" class="comp" data-info="SiK telemetry radio V5, air module (from the Pixhawk kit): 433 MHz, 100 mW, on TELEM 1; carries MAVLink between the Mac and the Pixhawk">
+<rect x="440" y="606" width="150" height="48" rx="6" fill="#1b1b1b" stroke="#000000" stroke-width="1.4"></rect><rect x="571" y="600" width="8" height="8" fill="#8a8f98"></rect><line x1="575" y1="600" x2="575" y2="584" stroke="#1b1b1b" stroke-width="4"></line><circle cx="575" cy="582" r="3.5" fill="#1b1b1b" stroke="none" stroke-width="1"></circle><circle cx="452" cy="614" r="2.2" fill="#e53935" stroke="none" stroke-width="1"></circle><circle cx="460" cy="614" r="2.2" fill="#43a047" stroke="none" stroke-width="1"></circle><text x="515" y="626.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">SiK telemetry radio V5</text>
+<text x="515" y="638.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#ffffff">air · 433 MHz · 100 mW</text>
+</g>
+<g id="pm02" class="comp" data-info="PM02 V3.2 power module (kit): 2–12S input, 5.2 V / 3 A output to the flight controller, voltage and current sensing; XT60 in and out — battery settings never configured in QGroundControl">
+<rect x="430" y="674" width="180" height="62" rx="6" fill="#2b2b2b" stroke="#111111" stroke-width="1.4"></rect><rect x="422" y="698" width="14" height="14" rx="2" fill="#f4d03f" stroke="#8c6d00" stroke-width="1"></rect><rect x="604" y="698" width="14" height="14" rx="2" fill="#f4d03f" stroke="#8c6d00" stroke-width="1"></rect><rect x="505" y="668" width="30" height="8" rx="2" fill="#f2f2f2" stroke="#999" stroke-width="1"></rect><text x="520" y="695.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">PM02 V3.2 power module</text>
+<text x="520" y="707.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#ffffff">5.2 V BEC · V / I sensing</text>
+<text x="520" y="719.7" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#ffffff">XT60 in / out · 6-pin to POWER</text>
+</g>
+<g id="battery" class="comp" data-info="LiPo 3S 11.1 V, 3000 mAh, 35C, XT60 (AMZZN) — stored in a LiPo-safe bag">
+<rect x="430" y="778" width="150" height="60" rx="7" fill="#1f2a44" stroke="#0f1830" stroke-width="1.6"></rect><rect x="442" y="790" width="126" height="36" rx="4" fill="#2d3b5e" stroke="#2d3b5e" stroke-width="1"></rect><rect x="580" y="798" width="10" height="22" rx="2" fill="#f4d03f" stroke="#8c6d00" stroke-width="1"></rect><rect x="574" y="826" width="14" height="6" fill="#f2f2f2"></rect><text x="505" y="805.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" font-style="normal" fill="#ffffff">LiPo 3S 11.1 V</text>
+<text x="505" y="818.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="normal" font-style="normal" fill="#ffffff">3000 mAh · 35C · XT60</text>
+</g>
+<g id="buzzer" class="comp" data-info="Buzzer (kit): arming and status tones">
+<circle cx="1090" cy="300" r="18" fill="#1b1b1b" stroke="#000" stroke-width="1.5"></circle><circle cx="1090" cy="300" r="12" fill="#2e2e2e" stroke="none" stroke-width="1"></circle><circle cx="1090" cy="300" r="4" fill="#555555" stroke="none" stroke-width="1"></circle><text x="1090" y="335" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">Buzzer</text>
+</g>
+<g id="switch" class="comp" data-info="Safety switch (kit): must be pressed before the motors can be armed; its LED ring blinks until then">
+<circle cx="1190" cy="300" r="19" fill="#f8f9fb" stroke="#c0392b" stroke-width="3"></circle><path d="M 1183 294 A 9 9 0 1 0 1197 294" fill="none" stroke="#1b1b1b" stroke-width="2.2"></path><line x1="1190" y1="289" x2="1190" y2="300" stroke="#1b1b1b" stroke-width="2.2"></line><text x="1190" y="335" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">Safety switch</text>
+</g>
+<g id="gps" class="comp" data-info="u-blox M8N GPS + compass module on its mast (kit): GPS over UART, compass over I2C; no GPS fix indoors">
+<circle cx="1140" cy="440" r="28" fill="#1b1b1b" stroke="#000" stroke-width="1.5"></circle><circle cx="1140" cy="440" r="21" fill="#2e2e2e" stroke="none" stroke-width="1"></circle><text x="1140" y="444" font-family="Helvetica, Arial, sans-serif" font-size="8" text-anchor="middle" font-weight="bold" font-style="normal" fill="#cfcfcf">M8N</text><path d="M 1140 424 L 1145 433 L 1135 433 Z" fill="#cfcfcf"></path><rect x="1137" y="468" width="6" height="32" fill="#111111"></rect><rect x="1125" y="500" width="30" height="8" rx="2" fill="#222222"></rect><text x="1140" y="526" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" font-weight="bold" font-style="normal" fill="#1e3c78">M8N GPS + compass</text>
+</g>
+</g>
+<g class="layer layer-software">
+<g data-comp="mac" data-info="QGroundControl on the Mac: firmware (ArduCopter 4.6.3), calibrations, parameters and monitoring, over USB-C or the telemetry link"><rect x="90" y="108" width="190" height="48" rx="5" fill="#f1e9f7" stroke="#6a3d9a" stroke-width="1.2"></rect><text x="185" y="126.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#6a3d9a">QGroundControl</text>
+<text x="185" y="138.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">setup · calibration · monitoring</text></g>
+<g data-comp="mac" data-info="mavcontrol.py (Python + pygame): arm / disarm, take-off, land, throttle and mode keys, RC override of the throttle channel at 10 Hz, live monitor of attitude, yaw rate and motor PWM"><rect x="90" y="162" width="190" height="56" rx="5" fill="#f1e9f7" stroke="#6a3d9a" stroke-width="1.2"></rect><text x="185" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#6a3d9a">mavcontrol.py (pygame)</text>
+<text x="185" y="192.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">arm · throttle · modes · monitor</text>
+<text x="185" y="204.7" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">RC overrides over MAVLink</text></g>
+<g data-comp="pixhawk" data-info="ArduCopter 4.6.3 (fmuv3 build) on the Pixhawk PRO: Quad X; SERIAL2_PROTOCOL = 2, SERIAL2_BAUD = 57; arming checks for RC and GPS disabled, FS_THR_ENABLE = 0, DISARM_DELAY = 0"><rect x="690" y="702" width="290" height="52" rx="5" fill="#f1e9f7" stroke="#6a3d9a" stroke-width="1.2"></rect><text x="835" y="721.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#6a3d9a">ArduCopter 4.6.3 (fmuv3 build) · Quad X</text>
+<text x="835" y="733.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">SERIAL2: MAVLink 2 @ 57 600 baud</text>
+<text x="835" y="745.7" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">RC + GPS arming checks off · FS_THR 0 · DISARM_DELAY 0</text></g>
+<g data-comp="pi" data-info="On the Pi: Raspberry Pi OS 32-bit, MAVProxy and pymavlink in a virtual environment (~/mavlink_project/venv), started by hand over SSH: mavproxy.py --master=/dev/serial0 --baudrate 57600"><rect x="400" y="534" width="255" height="44" rx="5" fill="#f1e9f7" stroke="#6a3d9a" stroke-width="1.2"></rect><text x="527" y="550.0" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="bold" font-style="normal" fill="#6a3d9a">Raspberry Pi OS 32-bit · MAVProxy + pymavlink (venv)</text>
+<text x="527" y="562.35" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a">/dev/serial0 @ 57 600 baud · started by hand over SSH</text></g>
+</g>
+<g class="layer layer-power">
+<path class="wire power" d="M 735 152 L 735 121" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="ESC 1 → motor: three phase wires on brass bullet connectors (crimped, not soldered); swapping two reverses the spin" data-nodes="esc1 m1"></path>
+<path class="wire power" d="M 751 210 L 751 184" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-info="Plate → ESC 1: battery voltage (+ / −)" data-nodes="plate esc1"></path>
+<path class="wire power" d="M 825 152 L 825 121" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="ESC 2 → motor: three phase wires on brass bullet connectors (crimped, not soldered); swapping two reverses the spin" data-nodes="esc2 m2"></path>
+<path class="wire power" d="M 841 210 L 841 184" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-info="Plate → ESC 2: battery voltage (+ / −)" data-nodes="plate esc2"></path>
+<path class="wire power" d="M 915 152 L 915 121" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="ESC 3 → motor: three phase wires on brass bullet connectors (crimped, not soldered); swapping two reverses the spin" data-nodes="esc3 m3"></path>
+<path class="wire power" d="M 931 210 L 931 184" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-info="Plate → ESC 3: battery voltage (+ / −)" data-nodes="plate esc3"></path>
+<path class="wire power" d="M 1005 152 L 1005 121" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="ESC 4 → motor: three phase wires on brass bullet connectors (crimped, not soldered); swapping two reverses the spin" data-nodes="esc4 m4"></path>
+<path class="wire power" d="M 1021 210 L 1021 184" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-info="Plate → ESC 4: battery voltage (+ / −)" data-nodes="plate esc4"></path>
+<path class="wire power" d="M 421 335 L 421 292 L 682 292 L 682 412 L 727 412" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="TELEM 2 5 V pin → Pi pin 2 (5 V): the Pi is powered by the flight controller's 5 V rail" data-nodes="pi p-telem2 pixhawk"></path>
+<path class="wire power" d="M 505 778 L 505 736" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="Battery → PM02 (XT60)" data-nodes="battery pm02"></path>
+<text x="512" y="760" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" font-weight="normal" font-style="normal" fill="#c0392b">XT60</text>
+<path class="wire power" d="M 610 688 L 660 688 L 660 642 L 727 642" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="PM02 6-pin lead → POWER port: 5.2 V supply + battery voltage / current sensing" data-nodes="pm02 p-power pixhawk"></path>
+<text x="693" y="636" font-family="Helvetica, Arial, sans-serif" font-size="8.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#c0392b">5.2 V + V/I</text>
+<path class="wire power" d="M 430 720 L 405 720 L 405 222 L 660 222" fill="none" stroke="#c0392b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" data-info="PM02 XT60 out → F450 plate: main battery current to the ESCs" data-nodes="pm02 plate"></path>
+<text x="411" y="470" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" font-style="normal" fill="#c0392b" transform="rotate(-90 411 470)">main current</text>
+</g>
+<g class="layer layer-signal">
+<path class="wire signal" d="M 815 264 L 815 248 L 719 248 L 719 184" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="MAIN OUT → ESC 1: PWM servo lead (signal + ground); which motor each output drives is set by SERVOn_FUNCTION (the pin numbers printed on this board do not match the firmware outputs)" data-nodes="pixhawk esc1"></path>
+<path class="wire signal" d="M 835 264 L 835 244 L 809 244 L 809 184" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="MAIN OUT → ESC 2: PWM servo lead (signal + ground); which motor each output drives is set by SERVOn_FUNCTION (the pin numbers printed on this board do not match the firmware outputs)" data-nodes="pixhawk esc2"></path>
+<path class="wire signal" d="M 855 264 L 855 244 L 899 244 L 899 184" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="MAIN OUT → ESC 3: PWM servo lead (signal + ground); which motor each output drives is set by SERVOn_FUNCTION (the pin numbers printed on this board do not match the firmware outputs)" data-nodes="pixhawk esc3"></path>
+<path class="wire signal" d="M 875 264 L 875 248 L 989 248 L 989 184" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="MAIN OUT → ESC 4: PWM servo lead (signal + ground); which motor each output drives is set by SERVOn_FUNCTION (the pin numbers printed on this board do not match the firmware outputs)" data-nodes="pixhawk esc4"></path>
+<path class="wire signal" d="M 444 335 L 444 300 L 690 300 L 690 418 L 727 418" fill="none" stroke="#1e3c78" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" data-info="Pi UART (pin 8 TXD → TELEM2 RX, pin 10 RXD ← TELEM2 TX, pin 6 GND) ↔ Pixhawk TELEM 2: MAVLink 2 at 57 600 baud" data-nodes="pi p-telem2 pixhawk"></path>
+<text x="567" y="311" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">UART · MAVLink 2 · 57 600 baud  (red: 5 V to the Pi)</text>
+<path class="wire signal" d="M 590 630 L 680 630 L 680 464 L 727 464" fill="none" stroke="#1e3c78" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" data-info="Air radio → TELEM 1 (6-pin GH cable): MAVLink" data-nodes="aradio p-telem1 pixhawk"></path>
+<text x="636" y="623" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">TELEM 1</text>
+<path class="wire signal" d="M 1072 300 L 1000 300 L 1000 372 L 943 372" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="Buzzer → BUZZER port" data-nodes="buzzer p-buzzer pixhawk"></path>
+<path class="wire signal" d="M 1190 319 L 1190 395 L 835 395 L 835 411" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="Safety switch → SWITCH port" data-nodes="switch p-switch pixhawk"></path>
+<path class="wire signal" d="M 1112 448 L 1000 448 L 1000 464 L 943 464" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="M8N GPS → GPS port (UART, 6-pin)" data-nodes="gps p-gps pixhawk"></path>
+<text x="1040" y="441" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">GPS (UART)</text>
+<path class="wire signal" d="M 1140 508 L 1140 598 L 943 598" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="M8N compass → I2C port (4-pin)" data-nodes="gps p-i2c pixhawk"></path>
+<text x="1040" y="592" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" font-weight="normal" font-style="normal" fill="#1e3c78">I2C (compass)</text>
+<path class="wire signal" d="M 175 258 L 175 350" fill="none" stroke="#1e3c78" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" data-info="USB: ground radio on the Mac" data-nodes="mac gradio"></path>
+</g>
+<g class="layer layer-radio">
+<path class="wire radio" d="M 300 190 L 360 190 L 360 410 L 400 410" fill="none" stroke="#6a3d9a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5" data-info="Wi-Fi: the Mac reaches the Pi over SSH on the home network" data-nodes="mac pi"></path>
+<text x="352" y="300" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a" transform="rotate(-90 352 300)">Wi-Fi · SSH</text>
+<path class="wire radio" d="M 240 374 L 372 374 L 372 631 L 440 631" fill="none" stroke="#6a3d9a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5" data-info="433 MHz link between the two SiK radios: MAVLink from mavcontrol.py / QGroundControl to the Pixhawk" data-nodes="gradio aradio"></path>
+<text x="366" y="500" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" font-weight="normal" font-style="normal" fill="#6a3d9a" transform="rotate(-90 366 500)">MAVLink · 433 MHz</text>
+</g>
+<g class="layer layer-confirm">
+
+</g>
+<g class="legend">
+<line x1="45" y1="885" x2="75" y2="885" stroke="#c0392b" stroke-width="3"></line><text x="82" y="889" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="normal" fill="#1b1b1b">Power</text>
+<line x1="140" y1="885" x2="170" y2="885" stroke="#1e3c78" stroke-width="2"></line><text x="177" y="889" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="normal" fill="#1b1b1b">Wiring (signal / data)</text>
+<line x1="315" y1="885" x2="345" y2="885" stroke="#6a3d9a" stroke-width="2" stroke-dasharray="7 5"></line><text x="352" y="889" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="normal" fill="#1b1b1b">Wireless link</text>
+<rect x="440" y="877" width="22" height="14" rx="3" fill="#f1e9f7" stroke="#6a3d9a" stroke-width="1.2"></rect><text x="469" y="889" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" font-weight="normal" font-style="normal" fill="#1b1b1b">Software</text>
+<text x="1275" y="889" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="end" font-weight="normal" font-style="italic" fill="#666666">Grey ports: unused</text>
+</g>
+</svg>
+</div>
+<div class="sysdiag-tip" hidden=""></div>
+</div>
+<style>
+.sysdiag { border: 1px solid #d9dfea; border-radius: 8px; background: #fff; margin: 1rem 0 1.5rem; }
+.sysdiag-bar { display: flex; flex-wrap: wrap; gap: .4rem .9rem; align-items: center; padding: .5rem .75rem; border-bottom: 1px solid #e3e8f0; font-size: .85rem; }
+.sysdiag-bar label { cursor: pointer; user-select: none; }
+.sysdiag-bar input { margin-right: .25rem; vertical-align: -1px; }
+.sysdiag-lbl { font-weight: 600; color: #1e3c78; }
+.sysdiag-hint { color: #666; font-style: italic; margin-left: auto; }
+.sysdiag-fs { border: 1px solid #1e3c78; background: #fff; color: #1e3c78; border-radius: 5px; padding: .2rem .6rem; cursor: pointer; font-size: .85rem; }
+.sysdiag-fs:hover { background: #1e3c78; color: #fff; }
+.sysdiag-stage { overflow: auto; }
+.sysdiag-stage svg { display: block; width: 100%; height: auto; }
+.sysdiag:fullscreen { border: 0; border-radius: 0; overflow: auto; }
+.sysdiag:fullscreen .sysdiag-stage svg { width: auto; height: calc(100vh - 3.2rem); margin: 0 auto; }
+.sysdiag .wire { cursor: pointer; transition: opacity .15s; }
+.sysdiag .wire:hover { stroke-width: 5px; }
+.sysdiag .comp { cursor: pointer; transition: opacity .15s; }
+.sysdiag.focus .wire:not(.on) { opacity: .12; }
+.sysdiag.focus .comp:not(.on) { opacity: .28; }
+.sysdiag.focus .layer-software, .sysdiag.focus .legend { opacity: .35; }
+.sysdiag .layer.off { display: none; }
+.sysdiag-tip { position: fixed; z-index: 2000; max-width: 340px; background: #1b1b1b; color: #fff; font-size: .8rem; line-height: 1.3; padding: .4rem .6rem; border-radius: 5px; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+</style>
+<script>
+(function () {
+  const root = document.getElementById('sysdiag'); if (!root) return;
+  const svg = root.querySelector('svg'), tip = root.querySelector('.sysdiag-tip');
+  root.querySelectorAll('input[data-layer]').forEach(cb => cb.addEventListener('change', () => {
+    svg.querySelector('.layer-' + cb.dataset.layer).classList.toggle('off', !cb.checked);
+  }));
+  root.querySelector('[data-act="fs"]').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (root.requestFullscreen) root.requestFullscreen();
+  });
+  svg.addEventListener('mousemove', e => {
+    const t = e.target.closest('[data-info]');
+    if (!t) { tip.hidden = true; return; }
+    tip.textContent = t.dataset.info; tip.hidden = false;
+    const x = Math.min(e.clientX + 14, window.innerWidth - 360), y = e.clientY + 16;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  });
+  svg.addEventListener('mouseleave', () => { tip.hidden = true; });
+  svg.addEventListener('click', e => {
+    const c = e.target.closest('.comp') || (e.target.closest('[data-comp]') && svg.getElementById(e.target.closest('[data-comp]').dataset.comp));
+    svg.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
+    if (!c) { root.classList.remove('focus'); return; }
+    const id = c.id; let hit = false;
+    svg.querySelectorAll('.wire').forEach(w => {
+      const nodes = (w.dataset.nodes || '').split(' ');
+      if (nodes.includes(id)) { hit = true; w.classList.add('on'); nodes.forEach(n => { const el = svg.getElementById(n); if (el) el.classList.add('on'); }); }
+    });
+    c.classList.add('on');
+    root.classList.toggle('focus', hit);
+  });
+})();
+</script>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/motor-layout.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Motor numbering and spin direction, Quad X convention: M1 front-right CCW, M2 rear-left CCW, M3 front-left CW, M4 rear-right CW. The motor test spins A → B → C → D clockwise from the front-right."><img src="../assets/drone/motor-layout.svg" class="img-fluid figure-img" style="width:55.0%" alt="Motor numbering and spin direction, Quad X convention: M1 front-right CCW, M2 rear-left CCW, M3 front-left CW, M4 rear-right CW. The motor test spins A → B → C → D clockwise from the front-right."></a></p>
+<figcaption>Motor numbering and spin direction, Quad X convention: M1 front-right CCW, M2 rear-left CCW, M3 front-left CW, M4 rear-right CW. The motor test spins A → B → C → D clockwise from the front-right.</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-simple callout-note no-icon callout-titled" title="Remarks">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Remarks
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Power.</strong> Battery (XT60) → PM02 power module (XT60 in/out) → F450 bottom plate, the power distribution board → the four ESCs, whose power leads end in brass bullet connectors crimped on the wires and mated to XT60 connectors → motors through crimped bullet connectors. The PM02’s 6-pin lead feeds the Pixhawk’s POWER port with 5.2 V plus battery voltage and current sensing. The Raspberry Pi is powered from the 5 V pin of the TELEM 2 connector, i.e.&nbsp;from the same 5.2 V rail.</li>
+<li><strong>Wiring.</strong> ESC servo leads on MAIN OUT 1–4 (PWM). The <code>SERVOn_FUNCTION</code> parameters must match exactly which motor each output drives: on this board the numbers printed next to the MAIN OUT pins do not correspond to the firmware’s outputs, which cost the first outdoor attempt (see <em>Known issue</em>). Raspberry Pi UART on TELEM 2: Pixhawk TX → Pi RX (GPIO 15, pin 10), Pixhawk RX → Pi TX (GPIO 14, pin 8), GND → GND (pin 6), 5 V → 5 V (pin 2). SiK air radio on TELEM 1. M8N GPS on the GPS port (UART) and its compass on I2C; safety switch on SWITCH, buzzer on BUZZER; laptop on USB-C for setup. No RC receiver: SBUS/RCIN is unused.</li>
+<li><strong>No soldering.</strong> Motor and ESC leads are joined with brass bullet connectors crimped by hand, and the ESCs reach the plate through XT60 connectors; the plate came pre-soldered.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="raspberry-pi-setup" class="level2">
+<h2 class="anchored" data-anchor-id="raspberry-pi-setup">Raspberry Pi setup</h2>
+<!-- Procedure followed from the ArduPilot wiki page "Communicating with Raspberry Pi via MAVLink". -->
+<p>The Pi’s place in the system (UART pins, 5 V feed, TELEM 2, MAVProxy) is on the diagram above.</p>
+<ul>
+<li><strong>Board and OS.</strong> Raspberry Pi 4 Model B (2 GB), Raspberry Pi OS 32-bit flashed on a micro-SD card, joined to a secured Wi-Fi network, administered over SSH.</li>
+<li><strong>Link.</strong> The Pi’s UART (<code>/dev/serial0</code>: GPIO 14 TXD on pin 8, GPIO 15 RXD on pin 10, GND on pin 6) is wired crosswise to the Pixhawk’s <strong>TELEM 2</strong> port; MAVLink 2 at 57 600 baud. The connector’s 5 V pin powers the Pi (pin 2).</li>
+<li><strong>Reference.</strong> <a href="https://ardupilot.org/dev/docs/raspberry-pi-via-mavlink.html">ArduPilot wiki — Communicating with Raspberry Pi via MAVLink</a>.</li>
+</ul>
+<p><strong>Flight-controller parameters</strong> (set in QGroundControl):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SERIAL2_PROTOCOL</code></td>
+<td>2 (MAVLink 2)</td>
+<td>TELEM 2 talks MAVLink to the Pi</td>
+</tr>
+<tr class="even">
+<td><code>SERIAL2_BAUD</code></td>
+<td>57 (57 600 baud)</td>
+<td>must match <code>--baudrate</code> on the Pi</td>
+</tr>
+</tbody>
+</table>
+<p><strong>1. Enable the UART on the Pi</strong> with <code>sudo raspi-config</code> → <em>Interfacing Options</em> → <em>Serial</em>, then answer <strong>No</strong> to the login shell over serial and <strong>Yes</strong> to the serial port hardware, and reboot: the UART is then available as <code>/dev/serial0</code>.</p>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/raspi-config-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="raspi-config: Interfacing Options."><img src="../assets/drone/raspi-config-1.png" class="img-fluid figure-img" alt="raspi-config: Interfacing Options."></a></p>
+<figcaption><code>raspi-config</code>: Interfacing Options.</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/raspi-config-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Serial: no login shell, hardware enabled."><img src="../assets/drone/raspi-config-2.png" class="img-fluid figure-img" alt="Serial: no login shell, hardware enabled."></a></p>
+<figcaption>Serial: no login shell, hardware enabled.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Screenshots from the <a href="https://ardupilot.org/dev/docs/raspberry-pi-via-mavlink.html">ArduPilot wiki</a> (© ArduPilot Dev Team, CC BY-SA 3.0).</p>
+<p><strong>2. Packages and a virtual environment for pymavlink / MAVProxy:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install python3-wxgtk4.0 python3-matplotlib python3-opencv python3-pip <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                     python3-numpy libxml2-dev libxslt1-dev python3-dev</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install python3-venv python3-full     <span class="co"># pip needs a venv on recent Raspberry Pi OS</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> ~/mavlink_project <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> ~/mavlink_project</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> venv venv</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> venv/bin/activate</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pymavlink</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mavproxy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>3. Start the link</strong> (the same commands every session, by hand over SSH — not a boot service yet):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/mavlink_project <span class="kw">&amp;&amp;</span> <span class="bu">source</span> venv/bin/activate</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mavproxy.py</span> <span class="at">--master</span><span class="op">=</span>/dev/serial0 <span class="at">--baudrate</span> 57600 <span class="at">--aircraft</span> MyCopter</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>MAVProxy connects to the Pixhawk and shows the vehicle’s heartbeat; <code>--aircraft MyCopter</code> keeps its logs in a <code>MyCopter/</code> folder. Nothing else runs on the Pi yet; this link is what automated control from the Raspberry Pi will use later.</p>
+</section>
+<section id="qgroundcontrol-setup" class="level2">
+<h2 class="anchored" data-anchor-id="qgroundcontrol-setup">QGroundControl setup</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/qgc-setup-workflow.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Typical first-setup order in QGroundControl. Green steps are done; the radio calibration does not apply (no RC transmitter)."><img src="../assets/drone/qgc-setup-workflow.svg" class="img-fluid figure-img" style="width:100.0%" alt="Typical first-setup order in QGroundControl. Green steps are done; the radio calibration does not apply (no RC transmitter)."></a></p>
+<figcaption>Typical first-setup order in QGroundControl. Green steps are done; the radio calibration does not apply (no RC transmitter).</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-simple callout-note no-icon callout-titled" title="Notes">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Notes
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Firmware.</strong> ArduPilot <strong>ArduCopter 4.6.3</strong>, fmuv3 build — the target for Pixhawk 1 / 2.4.8-class boards such as the Pixhawk PRO, as the board’s documentation asks.</li>
+<li><strong>Airframe.</strong> Quad X.</li>
+<li><strong>Calibrations.</strong> Accelerometer, compass and level horizon in QGroundControl, ESCs following the <a href="https://www.youtube.com/watch?v=BNzeVGD8IZI">Pixhawk 4 + S500 build tutorial, part 4</a> (Alex Fache). All of it was done indoors, on the 4th floor of a building: the level reference and the compass offsets may be off, and no GPS fix was possible.</li>
+<li><strong>Radio calibration.</strong> The RC arming check was disabled so the drone can arm, and <code>FS_THR_ENABLE</code> (throttle / RC failsafe) set to 0.</li>
+<li><strong>Arming checks.</strong> GPS removed from <code>ARMING_CHECK</code> (no fix indoors); <code>DISARM_DELAY</code> set to 0 (default 10 s) so the motors stop as soon as the program disarms.</li>
+<li><strong>Battery / power settings.</strong> Not configured.</li>
+<li><strong>Yaw tuning attempts</strong> (against the spin, see <em>Known issue</em>): <code>ATC_RAT_YAW_P</code> 0.18 → 0.35, <code>ATC_RAT_YAW_I</code> 0.018 → 0.05, <code>ATC_RAT_YAW_IMAX</code> 0.5 → 1, <code>MOT_YAW_HEADROOM</code> 200 → 400. No cure.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="ground-control" class="level2">
+<h2 class="anchored" data-anchor-id="ground-control">Ground control</h2>
+<p>There is no RC transmitter. The drone is flown from the Mac with <a href="https://github.com/how2222/pixhawk-drone/blob/main/mavcontrol.py"><code>mavcontrol.py</code></a>, a Python + pygame keyboard controller built on pymavlink (repository: <a href="https://github.com/how2222/pixhawk-drone">how2222/pixhawk-drone</a>), through the pair of SiK telemetry radios (433 MHz, 100 mW): the ground module plugs into the Mac over USB, the air module sits on TELEM 1. Flight modes tested: Stabilize and Alt Hold.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="../assets/drone/mavcontrol-ui.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="mavcontrol.py at launch, before the radio is plugged in: the keys on the left, the telemetry monitor (parameters, attitude, motor PWM) and the command line on the right."><img src="../assets/drone/mavcontrol-ui.png" class="img-fluid figure-img" style="width:90.0%" alt="mavcontrol.py at launch, before the radio is plugged in: the keys on the left, the telemetry monitor (parameters, attitude, motor PWM) and the command line on the right."></a></p>
+<figcaption><code>mavcontrol.py</code> at launch, before the radio is plugged in: the keys on the left, the telemetry monitor (parameters, attitude, motor PWM) and the command line on the right.</figcaption>
+</figure>
+</div>
+</section>
+<section id="test-flight" class="level2">
+<h2 class="anchored" data-anchor-id="test-flight">Test flight</h2>
+<p>First lift-off indoors on 12 April 2026, in Stabilize then Alt Hold (video below). The drone arms, spins up and leaves the ground, but rotates strongly about its vertical axis in both modes, and in Stabilize it also drifts about 40 cm during the climb — so flights have stayed at ground level.</p>
+<video controls="" preload="metadata" playsinline="" poster="../assets/drone/flight-poster.jpg" width="360" height="640" style="max-width:100%;border-radius:6px;background:#000"><source src="../assets/drone/flight.mp4" type="video/mp4"></video>
+<section id="known-issue-yaw-spin-at-take-off" class="level3">
+<h3 class="anchored" data-anchor-id="known-issue-yaw-spin-at-take-off">Known issue: yaw spin at take-off</h3>
+<p><strong>What was found and fixed so far.</strong> The first outdoor attempt (early April 2026, in a forest clearing) failed with asymmetric thrust: the drone tilted instead of climbing. The cause was the board itself: the numbers printed next to the Pixhawk PRO’s MAIN OUT pins do not match the outputs the firmware actually drives, so the ESCs, plugged in by following those numbers, were not on the motors the mixer expected. Remapping the <code>SERVOn_FUNCTION</code> parameters to the real wiring, recalibrating the ESCs and correcting the CW / CCW propellers got the drone to lift off (8–12 April). No motor was ever found damaged or weaker. <strong>What was tried without success:</strong> raising the yaw-rate gains (<code>ATC_RAT_YAW_P</code> 0.18 → 0.35, <code>I</code> 0.018 → 0.05, <code>IMAX</code> 0.5 → 1) and <code>MOT_YAW_HEADROOM</code> 200 → 400.</p>
+<div class="callout callout-style-simple callout-note no-icon callout-titled" title="Hypotheses still open">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Hypotheses still open
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><strong>Output-to-motor mapping.</strong> Check again, motor by motor, that each <code>SERVOn_FUNCTION</code> drives the motor the mixer expects.</li>
+<li><strong>Control inputs.</strong> <code>mavcontrol.py</code> only overrides the throttle; roll, pitch and yaw are never sent.</li>
+<li><strong>Propellers.</strong> CW / CCW and seating on each motor.</li>
+<li><strong>Indoor calibrations.</strong> Redo the compass and level calibrations outdoors.</li>
+<li><strong>Yaw PID.</strong> Back to the default gains, then read the flight logs.</li>
+</ol>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<ul>
+<li>ArduPilot references used for the wiring: <a href="https://ardupilot.org/copter/docs/common-pixhawk-overview.html">Pixhawk overview</a> · <a href="https://ardupilot.org/copter/docs/connect-escs-and-motors.html">connecting ESCs and motors</a>.</li>
+<li>Repository: <a href="https://github.com/how2222/pixhawk-drone">how2222/pixhawk-drone</a> — <code>mavcontrol.py</code> and the Raspberry Pi procedure.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/how2222\.github\.io\/portfolio");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Elyas Chikhaoui · Final-year internship from March 2027 · elyas.chikhaoui@telecom-paris.fr</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

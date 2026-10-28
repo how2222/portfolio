@@ -1,0 +1,121 @@
+[
+  {
+    "objectID": "projects/symbolic-regression.html",
+    "href": "projects/symbolic-regression.html",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "",
+    "text": "Status\n\n\nDone — paper being prepared for arXiv\n\n\nRole\n\n\nFirst author; method design, implementation, benchmark pipeline, paper\n\n\nTeam\n\n\nWith Julie Keisler (DRAGON’s author) and Anastase Charantonis, INRIA\n\n\nDuration\n\n\n7 months, Jan.–Jul. 2026\n\n\nContext\n\n\nResearch internship, INRIA Paris\n\n\nStack\n\n\nPython, PyTorch, DRAGON, XGBoost, scikit-learn (GPR), PySR"
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#context",
+    "href": "projects/symbolic-regression.html#context",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "Context",
+    "text": "Context\nSymbolic regression (SR) sits between machine learning and scientific discovery: instead of fitting the parameters of a fixed model, it searches for both the structure of an equation and its constants. Most modern methods (gplearn, PySR, Operon) are genetic programming over expression trees; newer ones use reinforcement learning or LLM priors.\nThe starting point was DRAGON (Keisler et al., JMLR 2024), a neural architecture search framework that optimises the topology, operators and hyperparameters of a DAG with a bandit-driven evolutionary algorithm (Mutant-UCB). The research question of the internship: can a NAS framework be repurposed to search over symbolic expressions instead of neural networks? The applied motivation was Earth observation at INRIA: recovering spectral indices (NDVI, SAVI, …) from raw Sentinel-2 bands, i.e. noisy, multi-feature datasets that are unrepresentative of the small, clean SR benchmarks in the literature."
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#the-technical-problem",
+    "href": "projects/symbolic-regression.html#the-technical-problem",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "The technical problem",
+    "text": "The technical problem\nGiven \\(\\mathcal{D}=\\{(x_i,y_i)\\}\\), find \\(f^\\star=\\arg\\min_{f\\in\\mathcal{F}_{\\mathcal{O},\\mathcal{T}}} L(f,\\mathcal{D})\\) over the space of expressions built from operators \\(\\mathcal{O}\\) and terminals \\(\\mathcal{T}\\). Three things make this hard:\n\nThe search space is discrete, combinatorial and unbounded in size, and every structure carries its own continuous constants to fit. Tree representations make it worse: \\(2x(x+x)\\) forces a tree to recompute \\(x+x\\) at every occurrence.\nNoise. Real measurements are noisy, and with thousands of samples the search must separate the analytical relationship from a heterogeneous cloud of points. PySR’s recovery drops to 0/10 on every target as soon as 1% relative noise is added.\nDimensionality. Remote-sensing targets have 13+ input bands; exhaustive or evolutionary search over all of them does not scale without feature selection."
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#approach-architecture",
+    "href": "projects/symbolic-regression.html#approach-architecture",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "Approach & architecture",
+    "text": "Approach & architecture\nExpressions are DAGs whose nodes are (combiner, primitive operator, parameters); edges carry multi-channel tensors, so several intermediate symbolic features propagate in parallel and a sub-expression is stored once and reused. The full pipeline, on a Sentinel-2 example:\n\n\n\nEnd-to-end DragonSR pipeline on Sentinel-2 bands: variable augmentation, XGBoost top-k selection, then evaluation of a candidate DAG whose edges are annotated with the channel representations (Figure 8 of the paper).\n\n\nMain components:\n\nPreprocessing — optional Gaussian-process denoising of the target (Matérn kernel); variable augmentation (apply \\(\\{+,-,\\times,\\div,\\sqrt{\\cdot},\\log,|\\cdot|,(\\cdot)^{2},(\\cdot)^{3},(\\cdot)^{-1}\\}\\) to raw features, keep the best by \\(R^2\\)); XGBoost feature-importance ranking to retain the top-n features.\nSearch space — unary/binary primitives (powers \\(x^{k}, k\\in\\{\\pm1,\\pm2,\\pm3\\}\\), ln, exp, sin, cos, sqrt, …), add/mul combiners with neutral-element padding, plus two channel operators: SelectFeatures (samples a channel subset with probability ∝ XGBoost importance) and ChannelBoost (adds a learned interaction channel).\nSearch — DRAGON’s Mutant-UCB over increasing complexity levels, 10 000 evaluations, optional parallel streams each with its own operator subset (best loss wins).\nObjective — MSE, MAE, Huber or \\(1-\\rho_{\\text{Pearson}}\\) (affine-invariant, followed by an affine realignment), plus a composition penalty \\(\\sum_{d_i\\ge 2}(b^{d_i-1}-1)\\) against nested \\(\\sin(\\sin(x))\\)-type chains; stochastic 10% subsampling per evaluation.\nChannel aggregation — instead of taking the best single channel, combine channels with (a) sparse OLS with iterative thresholding, (b) nested OLS through a link function \\(f^{-1}(\\sum_j w_j u_j(ch_j)+b)\\), or (c) a polynomial-rational model linearised as \\(y(1+\\sum b_m\\phi_m)\\approx a_0+\\sum a_m\\phi_m\\) — all solved by linear least squares, no non-linear optimisation.\n\n\n\n\n\n\n\n\n\n\nDecision\nChoice made\nAlternative rejected\nWhy\n\n\n\n\nExpression representation\nDAG with shared sub-expressions and variable channel width\nExpression tree (GP, DSR)\nNo duplicated sub-expressions; channel dimension becomes a search variable, so the space is richer at no extra budget\n\n\nSearch algorithm\nDeterministic DAG optimisation with Mutant-UCB (inherited from DRAGON)\nEvolutionary CGP, exhaustive DAG enumeration (Kahlmeyer et al.)\nReuses a mature NAS optimiser; complexity-level schedule bounds expression size\n\n\nConstants\nExtracted post hoc by (sparse / nested / rational) least squares on the output channels\nConstants inside the genome, optimised per candidate (PySR)\nTurns a non-linear constant search into a linear solve per candidate; the graph only has to find the terms\n\n\nSearch loss\nPearson correlation (+ affine realignment) as default\nMSE / RMSE\nAffine invariance: scale and offset are free, faster convergence (Haut et al. 2022, confirmed experimentally)\n\n\nNoise handling\nGPR surrogate target + stochastic subsampling\nMC-dropout uncertainty weighting (explored, dropped)\nSimpler, fewer hyperparameters, no extra network to train\n\n\nFeature selection\nVariable augmentation + XGBoost importance\nSearch directly over all raw bands\nMakes 13-band Sentinel-2 problems tractable"
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#my-contribution",
+    "href": "projects/symbolic-regression.html#my-contribution",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "My contribution",
+    "text": "My contribution\n\n\nRedesigned DRAGON’s search space for symbolic regression: symbolic primitives, add/mul combiners with padding, and the two channel operators SelectFeatures and ChannelBoost.\nDesigned and implemented the three channel-aggregation strategies (sparse OLS, nested OLS with link functions, polynomial-rational) and the composition-depth penalty.\nBuilt the preprocessing chain: variable augmentation, XGBoost ranking, GPR denoising, stochastic subsampling.\nBuilt the unified leaderboard pipeline (dataset generation with 6 000 samples, noise injection at ε ∈ {0, 1, 5, 10}%, 10 independent runs × 27 targets × 4 noise levels for both DragonSR and PySR), released on Zenodo.\nWrote the paper as first author; explored and documented two directions that were not retained (MC-dropout weighting, IASI wet-bulb temperature retrieval)."
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#results",
+    "href": "projects/symbolic-regression.html#results",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "Results",
+    "text": "Results\nRecovery counts over 10 independent runs, expression judged equivalent to ground truth after simplification. Selected rows from Table 2 of the paper:\n\n\n\n\n\n\n\n\n\n\n\n\nTarget\nPySR ε=0\nPySR ε≥0.01\nDragonSR ε=0\nε=0.01\nε=0.05\nε=0.10\n\n\n\n\nNguyen-8 (\\(\\sqrt{x}\\))\n10/10\n0\n9/10\n10/10\n9/10\n8/10\n\n\nNguyen-9 (\\(\\sin x+\\sin y^{2}\\))\n0/10\n0\n10/10\n9/10\n8/10\n8/10\n\n\nHubble (\\(v=70d\\))\n9/10\n0\n9/10\n6/10\n0/8\n1/10\n\n\nIdeal gas (\\(V=nRT/P\\))\n1/10\n0\n9/10\n6/10\n3/10\n4/10\n\n\nLeavitt (\\(M=-2.81\\log_{10}P-1.43\\))\n2/10\n0\n10/10\n6/10\n7/10\n5/10\n\n\nKepler 3rd\n0/10\n0\n10/10\n3/10\n4/10\n1/10\n\n\nSAVI (Sentinel-2)\n0/10\n0\n10/10\n9/10\n10/10\n8/10\n\n\nEVI2 (Sentinel-2)\n0/10\n0\n9/10\n8/10\n3/10\n3/10\n\n\nBSI (Sentinel-2)\n0/10\n0\n9/10\n6/10\n3/10\n9/10\n\n\nAWEI_sh (Sentinel-2)\n8/10\n0\n10/10\n3/10\n1/10\n0/10\n\n\n\nTakeaways: PySR is strong on simple noiseless targets (N8, N10, N11 at 10/10) but recovers nothing at any noise level on any of the 27 targets; DragonSR degrades gracefully up to 10% noise and is the only method recovering the multi-variable remote-sensing indices. Both fail on targets needing precise constants or deep transcendental structure (Newton, Planck, Schechter, WI2015, BAI, VARI, NIRv).\nDelivered: the paper (preprint), the open DragonSR code on GitHub, and the full run-level outputs on Zenodo."
+  },
+  {
+    "objectID": "projects/symbolic-regression.html#links",
+    "href": "projects/symbolic-regression.html#links",
+    "title": "DragonSR: equation discovery by DAG search",
+    "section": "Links",
+    "text": "Links\n\nPaper: PDF — DragonSR: Directed Acyclic Graph Search for Equation Discovery, Chikhaoui, Keisler, Charantonis, 2026 (arXiv to come)\nCode: https://github.com/how2222/dragonsr\nRun-level data: https://doi.org/10.5281/zenodo.22146752"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Projects",
+    "section": "",
+    "text": "Engineering student at Télécom Paris (applied mathematics, ML), looking for a 6-month final-year internship in ML research / data science starting March 2027. Every project sheet below follows the same structure: problem, approach, my contribution, results, limits. A one-page PDF of each sheet is available from the Other formats menu.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDragonSR: equation discovery by DAG search\n\n\nSymbolic regression reframed as DAG optimisation on top of the DRAGON NAS framework. Benchmarked against PySR on 27 targets (Nguyen, physics laws, Sentinel-2 indices) with…\n\n\n\nJul 31, 2026\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuadcopter built from scratch on a Pixhawk PRO\n\n\nF450 quadcopter built from parts (Pixhawk PRO, ArduCopter, Raspberry Pi 4), flown from a laptop program over a 433 MHz telemetry link. January–April 2026. Lifts off indoors;…\n\n\n\nJan 1, 2026\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Contact. elyas.chikhaoui@telecom-paris.fr · CV (EN) · CV (FR)"
+  },
+  {
+    "objectID": "projects/drone.html",
+    "href": "projects/drone.html",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "",
+    "text": "2026-01-01\nA quadcopter built from parts and flown from a laptop program over a 433 MHz telemetry link."
+  },
+  {
+    "objectID": "projects/drone.html#hardware",
+    "href": "projects/drone.html#hardware",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "Hardware",
+    "text": "Hardware\n\n\n\n\n\n\n\n\n\n\n\n\nPart\nWhat it is\nQty\nPrice (€)\nWhere\n\n\n\n\n    \nPixhawk PRO kit\nPixhawk PRO flight controller (STM32F4 @ 168 MHz, 2 MB flash, FMUv3-class, GH1.25 connectors, USB-C, 80 × 48 × 15 mm) + u-blox M8N GPS / compass with mast + PM02 V3.2 power module (2–12S, 5.2 V / 3 A, V/I sensing) + safety switch & buzzer + SiK telemetry radios V5 (433 MHz, 100 mW, ground + air) + cables + vibration mount\n1 kit\n143.99\nAliExpress\n\n\n\nF450 frame kit\nHAWK’S WORK F450: 450 mm wheelbase, glass-fibre and nylon, 2 white + 2 red arms, landing gear, pre-soldered bottom plate = power distribution board (MTOW ≈ 1.8 kg)\n1\n37.99\nAmazon\n\n\n  \nMotor + ESC + propeller sets\neach set: A2212 13T 1000KV brushless motor + 30 A SimonK ESC (5 V / 2 A BEC) + 2 propellers 1045 (so 4 spare propellers)\n4 sets\n4 × 18.99 = 75.96\nAmazon\n\n\n\nBattery\nAMZZN LiPo 3S 11.1 V, 3000 mAh, 35C, XT60, with its USB charger\n1\n34.99\nAmazon\n\n\n\nRaspberry Pi 4 Model B\n2 GB, Raspberry Pi OS 32-bit on a 32 GB micro-SD card (25 €)\n1\n≈ 65 + 25\n—\n\n\n\nConnectors and safety\nbrass bullet connectors, crimped by hand — no soldering on this build (11.99) · 3 pairs of XT60 connectors (9.99) · 2 LiPo-safe charging bags (10.00)\n\n31.98\nbullets · XT60 · bags\n\n\n\nTotal\n\n\n≈ 415\n\n\n\n\n\n\n\n\n\n\n\nNoteWeight budget — typical values, to be replaced by the scale\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPart\nQty\nUnit (g)\nTotal (g)\nSource\n\n\n\n\nF450 frame, incl. PDB plate\n1\n282\n282\nmanufacturer spec\n\n\nA2212 1000KV motor\n4\n≈ 50\n≈ 200\ntyp. (listings: 47–56 g)\n\n\n30 A ESC\n4\n≈ 25\n≈ 100\ntyp.\n\n\n1045 propeller\n4\n≈ 13\n≈ 52\ntyp.\n\n\nPixhawk PRO\n1\n≈ 38\n≈ 38\nPixhawk 2.4.8 figure\n\n\nM8N GPS + mast\n1\n≈ 50\n≈ 50\ntyp.\n\n\nPM02 V3.2\n1\n20\n20\nvendor spec\n\n\nSafety switch + buzzer\n1\n≈ 10\n≈ 10\ntyp.\n\n\nTelemetry radio (air) + antenna\n1\n≈ 20\n≈ 20\ntyp.\n\n\nRaspberry Pi 4 B\n1\n46\n46\nRaspberry Pi spec\n\n\nLiPo 3S 3000 mAh 35C\n1\n≈ 240\n≈ 240\ntyp. (listings: 220–260 g)\n\n\nWiring, straps, misc.\n\n≈ 40\n≈ 40\nestimate\n\n\nAll-up weight\n\n\n≈ 1.1 kg\nestimate"
+  },
+  {
+    "objectID": "projects/drone.html#system-overview-and-wiring",
+    "href": "projects/drone.html#system-overview-and-wiring",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "System overview and wiring",
+    "text": "System overview and wiring\n\n\n\n  Layers\n   Power\n   Wiring\n   Wireless\n   Software\n  Hover a wire or a part for details · click a part to highlight its connections\n  Full screen\n\n\n\n\n\nGround station — MacBook\n\nDrone — F450 quadcopter\n\n\nMacBook\n\n\nSiK telemetry radio V5\nground · 433 MHz · 100 mW\n\nNo RC transmitter: the drone is flown\nfrom mavcontrol.py on the Mac.\nUSB\n\nM1\nfront-right · CCW\n\n\nESC 130A\n\n\nM2\nrear-left · CCW\n\n\nESC 230A\n\n\nM3\nfront-left · CW\n\n\nESC 330A\n\n\nM4\nrear-right · CW\n\n\nESC 430A\n\nA2212 1000KV\n+ 1045 props\n30 A ESC (5 V BEC)\nSERVOn_FUNCTION must match the motor\neach output really drives: the numbers\nprinted on this board's MAIN OUT rail\ndo not match the firmware outputs\n\nF450 bottom plate = power distribution board (+ / −)\n\n\nAUX OUTMAIN OUT 1–8SBUS · RCINpixhawkPROFMUIOUSB-C\n\n\nSPKT/DSM\n\n\nBUZZER\n\n\nTELEM 2\n\n\nSWITCH\n\n\nSERIAL 4/5\n\n\nTELEM 1\n\n\nGPS\n\n\nUSB\n\n\nADC 3.3V\n\n\nCAN\n\n\nSPI\n\n\nI2C\n\n\nPOWER\n\n\nADC 6.6V\n\n\nRAMpin 2 · 5 V    6 · GND    8 · TXD    10 · RXDRaspberry Pi 4 Model B · 2 GB\n\nPowered from the Pixhawk's TELEM 2 5 V pin (via the PM02)\n\nSiK telemetry radio V5\nair · 433 MHz · 100 mW\n\n\nPM02 V3.2 power module\n5.2 V BEC · V / I sensing\nXT60 in / out · 6-pin to POWER\n\n\nLiPo 3S 11.1 V\n3000 mAh · 35C · XT60\n\n\nBuzzer\n\n\nSafety switch\n\n\nM8NM8N GPS + compass\n\n\n\nQGroundControl\nsetup · calibration · monitoring\nmavcontrol.py (pygame)\narm · throttle · modes · monitor\nRC overrides over MAVLink\nArduCopter 4.6.3 (fmuv3 build) · Quad X\nSERIAL2: MAVLink 2 @ 57 600 baud\nRC + GPS arming checks off · FS_THR 0 · DISARM_DELAY 0\nRaspberry Pi OS 32-bit · MAVProxy + pymavlink (venv)\n/dev/serial0 @ 57 600 baud · started by hand over SSH\n\n\n\n\n\n\n\n\n\n\n\n\nXT60\n\n5.2 V + V/I\n\nmain current\n\n\n\n\n\n\n\nUART · MAVLink 2 · 57 600 baud  (red: 5 V to the Pi)\n\nTELEM 1\n\n\n\nGPS (UART)\n\nI2C (compass)\n\n\n\n\nWi-Fi · SSH\n\nMAVLink · 433 MHz\n\n\n\n\n\nPower\nWiring (signal / data)\nWireless link\nSoftware\nGrey ports: unused\n\n\n\n\n\n\n\n\n\n\nMotor numbering and spin direction, Quad X convention: M1 front-right CCW, M2 rear-left CCW, M3 front-left CW, M4 rear-right CW. The motor test spins A → B → C → D clockwise from the front-right.\n\n\n\n\n\n\n\n\nNoteRemarks\n\n\n\n\n\n\nPower. Battery (XT60) → PM02 power module (XT60 in/out) → F450 bottom plate, the power distribution board → the four ESCs, whose power leads end in brass bullet connectors crimped on the wires and mated to XT60 connectors → motors through crimped bullet connectors. The PM02’s 6-pin lead feeds the Pixhawk’s POWER port with 5.2 V plus battery voltage and current sensing. The Raspberry Pi is powered from the 5 V pin of the TELEM 2 connector, i.e. from the same 5.2 V rail.\nWiring. ESC servo leads on MAIN OUT 1–4 (PWM). The SERVOn_FUNCTION parameters must match exactly which motor each output drives: on this board the numbers printed next to the MAIN OUT pins do not correspond to the firmware’s outputs, which cost the first outdoor attempt (see Known issue). Raspberry Pi UART on TELEM 2: Pixhawk TX → Pi RX (GPIO 15, pin 10), Pixhawk RX → Pi TX (GPIO 14, pin 8), GND → GND (pin 6), 5 V → 5 V (pin 2). SiK air radio on TELEM 1. M8N GPS on the GPS port (UART) and its compass on I2C; safety switch on SWITCH, buzzer on BUZZER; laptop on USB-C for setup. No RC receiver: SBUS/RCIN is unused.\nNo soldering. Motor and ESC leads are joined with brass bullet connectors crimped by hand, and the ESCs reach the plate through XT60 connectors; the plate came pre-soldered."
+  },
+  {
+    "objectID": "projects/drone.html#raspberry-pi-setup",
+    "href": "projects/drone.html#raspberry-pi-setup",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "Raspberry Pi setup",
+    "text": "Raspberry Pi setup\n\nThe Pi’s place in the system (UART pins, 5 V feed, TELEM 2, MAVProxy) is on the diagram above.\n\nBoard and OS. Raspberry Pi 4 Model B (2 GB), Raspberry Pi OS 32-bit flashed on a micro-SD card, joined to a secured Wi-Fi network, administered over SSH.\nLink. The Pi’s UART (/dev/serial0: GPIO 14 TXD on pin 8, GPIO 15 RXD on pin 10, GND on pin 6) is wired crosswise to the Pixhawk’s TELEM 2 port; MAVLink 2 at 57 600 baud. The connector’s 5 V pin powers the Pi (pin 2).\nReference. ArduPilot wiki — Communicating with Raspberry Pi via MAVLink.\n\nFlight-controller parameters (set in QGroundControl):\n\n\n\n\n\n\n\n\nParameter\nValue\nEffect\n\n\n\n\nSERIAL2_PROTOCOL\n2 (MAVLink 2)\nTELEM 2 talks MAVLink to the Pi\n\n\nSERIAL2_BAUD\n57 (57 600 baud)\nmust match --baudrate on the Pi\n\n\n\n1. Enable the UART on the Pi with sudo raspi-config → Interfacing Options → Serial, then answer No to the login shell over serial and Yes to the serial port hardware, and reboot: the UART is then available as /dev/serial0.\n\n\n\n\n\n\nraspi-config: Interfacing Options.\n\n\n\n\n\n\n\nSerial: no login shell, hardware enabled.\n\n\n\n\n\nScreenshots from the ArduPilot wiki (© ArduPilot Dev Team, CC BY-SA 3.0).\n2. Packages and a virtual environment for pymavlink / MAVProxy:\nsudo apt-get update\nsudo apt-get install python3-wxgtk4.0 python3-matplotlib python3-opencv python3-pip \\\n                     python3-numpy libxml2-dev libxslt1-dev python3-dev\nsudo apt install python3-venv python3-full     # pip needs a venv on recent Raspberry Pi OS\nmkdir ~/mavlink_project && cd ~/mavlink_project\npython3 -m venv venv\nsource venv/bin/activate\npip install pymavlink\npip install mavproxy\n3. Start the link (the same commands every session, by hand over SSH — not a boot service yet):\ncd ~/mavlink_project && source venv/bin/activate\nmavproxy.py --master=/dev/serial0 --baudrate 57600 --aircraft MyCopter\nMAVProxy connects to the Pixhawk and shows the vehicle’s heartbeat; --aircraft MyCopter keeps its logs in a MyCopter/ folder. Nothing else runs on the Pi yet; this link is what automated control from the Raspberry Pi will use later."
+  },
+  {
+    "objectID": "projects/drone.html#qgroundcontrol-setup",
+    "href": "projects/drone.html#qgroundcontrol-setup",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "QGroundControl setup",
+    "text": "QGroundControl setup\n\n\n\nTypical first-setup order in QGroundControl. Green steps are done; the radio calibration does not apply (no RC transmitter).\n\n\n\n\n\n\n\n\nNoteNotes\n\n\n\n\n\n\nFirmware. ArduPilot ArduCopter 4.6.3, fmuv3 build — the target for Pixhawk 1 / 2.4.8-class boards such as the Pixhawk PRO, as the board’s documentation asks.\nAirframe. Quad X.\nCalibrations. Accelerometer, compass and level horizon in QGroundControl, ESCs following the Pixhawk 4 + S500 build tutorial, part 4 (Alex Fache). All of it was done indoors, on the 4th floor of a building: the level reference and the compass offsets may be off, and no GPS fix was possible.\nRadio calibration. The RC arming check was disabled so the drone can arm, and FS_THR_ENABLE (throttle / RC failsafe) set to 0.\nArming checks. GPS removed from ARMING_CHECK (no fix indoors); DISARM_DELAY set to 0 (default 10 s) so the motors stop as soon as the program disarms.\nBattery / power settings. Not configured.\nYaw tuning attempts (against the spin, see Known issue): ATC_RAT_YAW_P 0.18 → 0.35, ATC_RAT_YAW_I 0.018 → 0.05, ATC_RAT_YAW_IMAX 0.5 → 1, MOT_YAW_HEADROOM 200 → 400. No cure."
+  },
+  {
+    "objectID": "projects/drone.html#ground-control",
+    "href": "projects/drone.html#ground-control",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "Ground control",
+    "text": "Ground control\nThere is no RC transmitter. The drone is flown from the Mac with mavcontrol.py, a Python + pygame keyboard controller built on pymavlink (repository: how2222/pixhawk-drone), through the pair of SiK telemetry radios (433 MHz, 100 mW): the ground module plugs into the Mac over USB, the air module sits on TELEM 1. Flight modes tested: Stabilize and Alt Hold.\n\n\n\nmavcontrol.py at launch, before the radio is plugged in: the keys on the left, the telemetry monitor (parameters, attitude, motor PWM) and the command line on the right."
+  },
+  {
+    "objectID": "projects/drone.html#test-flight",
+    "href": "projects/drone.html#test-flight",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "Test flight",
+    "text": "Test flight\nFirst lift-off indoors on 12 April 2026, in Stabilize then Alt Hold (video below). The drone arms, spins up and leaves the ground, but rotates strongly about its vertical axis in both modes, and in Stabilize it also drifts about 40 cm during the climb — so flights have stayed at ground level.\n\n\nKnown issue: yaw spin at take-off\nWhat was found and fixed so far. The first outdoor attempt (early April 2026, in a forest clearing) failed with asymmetric thrust: the drone tilted instead of climbing. The cause was the board itself: the numbers printed next to the Pixhawk PRO’s MAIN OUT pins do not match the outputs the firmware actually drives, so the ESCs, plugged in by following those numbers, were not on the motors the mixer expected. Remapping the SERVOn_FUNCTION parameters to the real wiring, recalibrating the ESCs and correcting the CW / CCW propellers got the drone to lift off (8–12 April). No motor was ever found damaged or weaker. What was tried without success: raising the yaw-rate gains (ATC_RAT_YAW_P 0.18 → 0.35, I 0.018 → 0.05, IMAX 0.5 → 1) and MOT_YAW_HEADROOM 200 → 400.\n\n\n\n\n\n\nNoteHypotheses still open\n\n\n\n\n\n\nOutput-to-motor mapping. Check again, motor by motor, that each SERVOn_FUNCTION drives the motor the mixer expects.\nControl inputs. mavcontrol.py only overrides the throttle; roll, pitch and yaw are never sent.\nPropellers. CW / CCW and seating on each motor.\nIndoor calibrations. Redo the compass and level calibrations outdoors.\nYaw PID. Back to the default gains, then read the flight logs."
+  },
+  {
+    "objectID": "projects/drone.html#links",
+    "href": "projects/drone.html#links",
+    "title": "Quadcopter built from scratch on a Pixhawk PRO",
+    "section": "Links",
+    "text": "Links\n\nArduPilot references used for the wiring: Pixhawk overview · connecting ESCs and motors.\nRepository: how2222/pixhawk-drone — mavcontrol.py and the Raspberry Pi procedure."
+  }
+]
